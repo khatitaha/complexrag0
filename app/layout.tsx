@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -9,8 +10,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Study Hub - Your AI Learning Assistant",
+  description: "Upload your study materials and get AI-generated flashcards, summaries, and practice exams",
 };
 
 const geistSans = Geist({
@@ -33,7 +34,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="flex min-h-screen">
+            <main className="flex-1 transition-all duration-300 ease-in-out">
+              <Toaster />
+
+              {children}
+            </main>
+          </div>
         </ThemeProvider>
       </body>
     </html>

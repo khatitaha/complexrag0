@@ -1,0 +1,151 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { v4 as uuidv4 } from 'uuid'
+import { createClient } from '@/lib/supabase/server'
+
+
+
+
+
+
+export async function POST(request: NextRequest) {
+    console.log("we are uploading the file")
+    try {
+        const supabase = await createClient()
+
+        const formData = await request.formData()
+        const files = formData.getAll('files')
+        console.log("we are uploading the file", files)
+
+
+        if (!files || files.length === 0) {
+            return NextResponse.json({ error: 'No files provided' }, { status: 400 })
+        }
+
+        const uploadedFiles = []
+
+        for (const file of files) {
+            if (!(file instanceof File)) continue
+
+            const bytes = await file.arrayBuffer()
+            const buffer = Buffer.from(bytes)
+
+            const originalName = file.name
+            const extension = originalName.split('.').pop()
+            const uniqueId = uuidv4()
+            const newFileName = `${uniqueId}.${extension}`
+
+            const { data, error } = await supabase.storage
+                .from('docs') // replace with your actual bucket name
+                .upload(`uploads/${newFileName}`, buffer, {
+                    contentType: file.type,
+                    upsert: false
+                })
+
+            if (error) {
+                console.error('Supabase storage upload error:', error)
+                continue
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('docs')
+                .getPublicUrl(`uploads/${newFileName}`)
+
+            console.log("the public url is :::::::::::::::::::", publicUrlData);
+
+
+            uploadedFiles.push({
+                originalName,
+                fileName: newFileName,
+                size: file.size,
+                type: file.type,
+                path: newFileName
+            })
+        }
+
+        console.log('Files uploaded to Supabase successfully:', uploadedFiles)
+
+        return NextResponse.json({
+            message: 'Files uploaded to Supabase successfully',
+            files: uploadedFiles,
+            fileRoute: uploadedFiles[0]?.path || null
+        })
+    } catch (error) {
+        console.error('Unexpected error uploading files:', error)
+        return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    }
+}
+
+export const config = {
+    api: {
+        bodyParser: false
+    }
+}
+
+
+
+
+
+
+// export async function POST(request: NextRequest) {
+//     try {
+//         const formData = await request.formData()
+//         const files = formData.getAll('files')
+
+//         if (!files || files.length === 0) {
+//             return NextResponse.json(
+//                 { error: 'No files provided' },
+//                 { status: 400 }
+//             )
+//         }
+
+//         const uploadedFiles = []
+//         const uploadDir = join(process.cwd(), 'uploads')
+//         await mkdir(uploadDir, { recursive: true })
+
+//         for (const file of files) {
+//             if (!(file instanceof File)) continue
+
+//             const bytes = await file.arrayBuffer()
+//             const buffer = Buffer.from(bytes)
+
+//             const uniqueId = uuidv4()
+//             const originalName = file.name
+//             const extension = originalName.split('.').pop()
+//             const newFileName = `${uniqueId}.${extension}`
+
+//             const filePath = join(uploadDir, newFileName)
+//             await writeFile(filePath, buffer)
+
+//             uploadedFiles.push({
+//                 originalName,
+//                 fileName: newFileName,
+//                 size: file.size,
+//                 type: file.type,
+//                 path: filePath
+//             })
+//         }
+
+//         const response = NextResponse.json({
+//             message: 'Files uploaded successfully',
+//             files: uploadedFiles,
+//             fileRoute: uploadedFiles[0].fileName
+//         })
+
+//         return response
+
+//     } catch (error) {
+//         console.error('Error uploading files:', error)
+//         return NextResponse.json(
+//             { error: 'Error uploading files' },
+//             { status: 500 }
+//         )
+//     }
+// }
+
+// export const config = {
+//     api: {
+//         bodyParser: false
+//     }
+// }
