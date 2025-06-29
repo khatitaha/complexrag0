@@ -13,6 +13,7 @@ import {
     FiX,
 } from 'react-icons/fi';
 import { LiaUniversitySolid } from "react-icons/lia";
+import { FaRegFileAlt } from "react-icons/fa";
 
 export default function NavbarLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -24,7 +25,7 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
                 className={`bg-neutral-800 text-white transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'
                     } overflow-hidden`}
             >
-                <div className="p-4 space-y-4">
+                <div className="p-4 space-y-4  print:hidden">
                     <h1 className="text-2xl font-bold">Study Hub</h1>
                     <Link href="/home" className="flex items-center gap-2 p-2 rounded hover:bg-neutral-700">
                         <FiHome /> <span>Home</span>
@@ -35,10 +36,14 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
                     <Link href="/exams" className="flex items-center gap-2 p-2 rounded hover:bg-neutral-700">
                         <LiaUniversitySolid /> <span>Exams</span>
                     </Link>
+                    <Link href="/documents" className="flex items-center gap-2 p-2 rounded hover:bg-neutral-700">
+                        <FaRegFileAlt /> <span>documents</span>
+                    </Link>
                     <Link href="/profile" className="flex items-center gap-2 p-2 rounded hover:bg-neutral-700">
                         <FiUser /> <span>Profile</span>
                     </Link>
                     <div className="border-t pt-4">
+
                         <div className="flex items-center gap-2 text-sm">
                             <FiClock /> Recent Lessons
                         </div>
