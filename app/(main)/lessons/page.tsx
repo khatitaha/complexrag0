@@ -9,7 +9,7 @@ const LessonsPage = async (props: Props) => {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const { data, error } = await supabase
-        .from('learning_content')
+        .from('lessons')
         .select('*')
         .eq('user_id', user?.id)
     console.log("we got the data ", data);

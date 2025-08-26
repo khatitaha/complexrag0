@@ -63,15 +63,20 @@ export async function loadAndSplitDocument(fileUrl: string) {
         default:
             throw new Error(`Unsupported file type: ${ext}`)
     }
+    try {
+        const docs = await loader.load()
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1000,
+            chunkOverlap: 200,
+        })
+        const splitDocs = await splitter.splitDocuments(docs)
 
-    const docs = await loader.load()
-    const splitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
-        chunkOverlap: 200,
-    })
-    const splitDocs = await splitter.splitDocuments(docs)
+        return splitDocs
+    } finally {
+        // ✅ Always cleanup the temp file
+        await fs.unlink(tempFilePath).catch(() => { });
+    }
 
-    return splitDocs
 }
 
 
@@ -210,6 +215,10 @@ export async function generateExam(docs: any[]) {
 
 
 
+
+
+
+
 export async function generateLearningContentV1(docs: any[]) {
     const model = new ChatGroq({
         apiKey: process.env.GROQ_API_KEY, // Default value.
@@ -283,6 +292,164 @@ export async function generateLearningContentV1(docs: any[]) {
     console.log("result", result)
     return result;
 }
+
+
+
+
+export async function generateLearningContentV2(docs: any[], language: string,
+    quizCount: number,
+    flashCount: number,
+    note: string) {
+    const model = new ChatGroq({
+        apiKey: process.env.GROQ_API_KEY, // Default value.
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        temperature: 0.3,
+    });
+    console.log(`language : ${language} , quiz : ${quizCount}, flash : ${flashCount}, note : ${note} from generating learning content `)
+
+    const parser = StructuredOutputParser.fromZodSchema(
+        z.object({
+            lesson: z.array(z.object({
+                title: z.string(),
+                lines: z.array(z.object({
+                    text: z.string(),
+                    explanation: z.string(),
+                })),
+            })),
+
+            flashcards: z.array(
+                z.object({
+                    question: z.string(),
+                    answer: z.string(),
+                })
+            ),
+            quiz: z.array(
+                z.object({
+                    question: z.string(),
+                    options: z.array(z.string()).length(4),
+                    answer: z.number().min(0).max(3),
+                    explanation: z.string()
+                })
+            ),
+            title: z.string(),
+
+        })
+    );
+
+    function escapeCurlyBraces(str: string) {
+        return str.replace(/[{]/g, "{{").replace(/[}]/g, "}}");
+    }
+
+    const formatInstructions = escapeCurlyBraces(parser.getFormatInstructions());
+    const escapedInput = escapeCurlyBraces(
+        docs.map((d) => d.pageContent).join("\n\n")
+    );
+
+    const prompt = ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            "You are an expert educator. Read the content and create structured learning material in JSON format.",
+        ],
+        [
+            "human",
+            `Here is the document content:
+  
+  {input}
+  
+   go through each line of the lesson and make sure you dont skip anything and then generate lesson in ${language} which is an array of objects that has a title for each header or point of the lessson at least 4 points
+ then in each lesson a clear explanation of the lesson through lines  each line has a text and an explanation for each lesson there should be at least 4 lines , then make a list of flashcards (question and answer) whihc should jave all the points of the lesson or at least the most important points of the lesson 
+ make sure you make them as question and answer so the user can memorize and learn faster  there should be ${flashCount} , then make quiz which is an array of objects that has a question and 4 options and the correct answer and an explanation for each question there should be ${quizCount} questions , also ${note} also make a title out of 4 to 6 words that describe the lesson that user has uploaded in ${language} :
+  
+  ${formatInstructions}`,
+        ],
+    ]);
+
+    const chain = prompt.pipe(model).pipe(parser);
+    const result = await chain.invoke({ input: escapedInput });
+    console.log("result", result)
+    return result;
+}
+
+
+export async function generateExamContentV2(docs: any[]) {
+    const model = new ChatGroq({
+        apiKey: process.env.GROQ_API_KEY, // Default value.
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        temperature: 0.3,
+    });
+
+    const parser = StructuredOutputParser.fromZodSchema(
+        z.object({
+            shortQuestions: z.array(
+                z.object({
+                    id: z.number(),
+                    question: z.string(),
+                    answer: z.string(),
+                })
+            ),
+            multipleOptionsQuestions: z.array(
+                z.object({
+                    id: z.number(),
+                    question: z.string(),
+                    options: z.array(z.string()).length(4),
+                    answer: z.number().min(0).max(3),
+                    explanation: z.string()
+                })
+            ),
+            title: z.string(),
+
+        })
+    );
+
+    function escapeCurlyBraces(str: string) {
+        return str.replace(/[{]/g, "{{").replace(/[}]/g, "}}");
+    }
+
+    const formatInstructions = escapeCurlyBraces(parser.getFormatInstructions());
+    const escapedInput = escapeCurlyBraces(
+        docs.map((d) => d.pageContent).join("\n\n")
+    );
+
+    const prompt = ChatPromptTemplate.fromMessages([
+        [
+            "system",
+            "You are an expert educator. Read the content and create structured examination material in JSON format.",
+        ],
+        [
+            "human",
+            `Here is the document content:
+  
+  {input}
+  
+   these are probably diffrent lessons so you have to go through each line of the lessons and make sure you dont skip anything and then generate an exam which is an array of two objects first one is shorts questions make at least 2 and at maximum 5 that has a number as id and the question and an answer ,
+ then the multipleOptionsQuestions is an array of objects that has an id as number and question and options at least 4 and the number of the correct option in the array and an explanation make at least 5 multiple answer questions and 10 as maximum , make sure by both types of question you cover every topic in the lessons of the input or at least majority , finally make a title for the exam based on topics covered
+  
+  ${formatInstructions}`,
+        ],
+    ]);
+
+    const chain = prompt.pipe(model).pipe(parser);
+    const result = await chain.invoke({ input: escapedInput });
+    console.log("result", result)
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ////: new version of the langchain 
 

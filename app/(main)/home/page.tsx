@@ -6,7 +6,7 @@ type Props = {}
 
 const HomePage = (props: Props) => {
     return (
-        <div className="h-full bg-gradient-to-br from-neutral-950 to-neutral-900 relative overflow-hidden">
+        <div className="h-full dark:bg-gradient-to-br dark:from-neutral-950 dark:to-neutral-900 bg-gradient-to-br from-neutral-100 to-neutral-200 relative overflow-hidden">
 
 
             {/* Main Content */}
@@ -20,7 +20,7 @@ const HomePage = (props: Props) => {
 
                 <div className="relative z-10 text-center px-4">
                     <div className="mb-8 transform hover:scale-105 transition-transform duration-300">
-                        <div className="w-24 h-24 bg-neutral-900 rounded-2xl shadow-lg mx-auto mb-6 flex items-center justify-center">
+                        <div className="w-24 h-24 dark:bg-neutral-900 bg-neutral-200 rounded-2xl shadow-lg mx-auto mb-6 flex items-center justify-center">
                             <FiUpload className="w-12 h-12 text-blue-600" />
                         </div>
                     </div>
@@ -29,7 +29,7 @@ const HomePage = (props: Props) => {
                         Upload Your Lesson
                     </h1>
 
-                    <p className="text-neutral-400 mb-12 max-w-md mx-auto text-lg">
+                    <p className="dark:text-neutral-400 text-neutral-600 mb-12 max-w-md mx-auto text-lg">
                         Transform your study materials into interactive learning content
                     </p>
 

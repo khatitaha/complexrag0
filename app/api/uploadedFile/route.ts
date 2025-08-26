@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
         }
 
         const uploadedFiles = []
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 401 })
+        }
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+            return NextResponse.json({ error: 'Session not found' }, { status: 401 })
+        }
 
         for (const file of files) {
             if (!(file instanceof File)) continue
@@ -53,7 +61,21 @@ export async function POST(request: NextRequest) {
                 .getPublicUrl(`uploads/${newFileName}`)
 
             console.log("the public url is :::::::::::::::::::", publicUrlData);
+            const { error: dbError } = await supabase.from("documents").insert([
+                {
+                    user_id: user.id,
+                    originalName: originalName,
+                    path: newFileName,
+                    publicUrl: publicUrlData.publicUrl,
+                    newFileName: newFileName,
+                    type: file.type,
+                    size: file.size,
+                },
+            ]);
 
+            if (dbError) {
+                console.error("❌ DB insert error:", dbError.message);
+            }
 
             uploadedFiles.push({
                 originalName,
@@ -63,6 +85,8 @@ export async function POST(request: NextRequest) {
                 path: newFileName
             })
         }
+
+
 
         console.log('Files uploaded to Supabase successfully:', uploadedFiles)
 
@@ -82,10 +106,6 @@ export const config = {
         bodyParser: false
     }
 }
-
-
-
-
 
 
 // export async function POST(request: NextRequest) {
@@ -149,3 +169,7 @@ export const config = {
 //         bodyParser: false
 //     }
 // }
+
+
+
+

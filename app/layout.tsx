@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Lato } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -20,6 +20,11 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${lato.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

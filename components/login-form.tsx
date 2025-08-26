@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { signUpWithGoogle } from "@/app/auth/actions";
 
 export function LoginForm({
   className,
@@ -101,6 +102,14 @@ export function LoginForm({
               >
                 Sign up
               </Link>
+            </div>
+
+
+          </form>
+          <form>
+
+            <div>
+              <button type="submit" className=" bg-slate-600" formAction={signUpWithGoogle}>sign in with google</button>
             </div>
           </form>
         </CardContent>
