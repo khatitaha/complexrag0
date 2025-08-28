@@ -57,48 +57,32 @@ export async function wb2Logic(filePath: string, file_id: string, language: stri
     console.log(`language : ${language} , quiz : ${quizCount}, flash : ${flashCount}, note : ${note} from logic  `)
 
     const supabase = await createClient()
-
-    const { data, error: userError } = await supabase.auth.getUser();
-
-    // 1. Try fetching
-    const content = await getLearningContentFromDb(file_id);
-    console.log("i tried to get the content and i did now im return in it  ")
-
-    if (content) return content;
+    const { data: { user } } = await supabase.auth.getUser();
 
     try {
-        console.log("couldnt find the conent now im generating  ")
+        // We no longer need to check for existing content here,
+        // as the page component does that now.
+        // We can go straight to generating the content.
 
-        // 2. Generate and save
+        console.log("Generating new lesson content...");
+
         const docs = await loadAndSplitDocument(filePath);
         const result = await generateLearningContentV2(docs, language, quizCount,
             flashCount,
             note,);
-        console.log("just generated and now im saving   ")
 
         await saveLearningContentToDbFromAction(result, file_id);
-        console.log("just saved done saving    ")
 
-        // 3. Re-fetch from DB
-        console.log("refetching again after i just saved ")
-        const final = await getLearningContentFromDb(file_id);
-        console.log("fetched the new generated and saved  ")
-
-        if (final) return final;
-
-        // 4. Fallback return (if something went wrong with DB)
-        // return result;
-
-
-
+        // Return the newly generated content
         return {
             file_id: file_id,
             lesson: result.lesson,
             flashcards: result.flashcards,
             quiz: result.quiz,
             title: result.title,
-            user_id: data.user?.id
-        }
+            user_id: user?.id
+        };
+
     } catch (error) {
         console.error("wb2Logic error", error);
         return null;

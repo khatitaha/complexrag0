@@ -1,10 +1,13 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ExamQuestion, Exercise, Flashcard, LearningContentVersion, Summary, useActions } from '@/lib/utils/zustand'
+import { useActions } from '@/lib/utils/zustand'
 import Link from 'next/link'
-import { FiBookOpen, FiClipboard, FiPlay, FiArrowRight, FiFileText } from 'react-icons/fi'
-
+import { FiBookOpen, FiClipboard, FiPlay, FiArrowRight, FiFileText, FiTrash2, FiCheckSquare, FiSquare } from 'react-icons/fi'
+import { deleteLessons } from './actions';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 
 export type Lesson = {
@@ -22,18 +25,57 @@ type Props = {
     lessons: Lesson[]
 }
 
-const LessonClient = ({ lessons }: Props) => {
+const LessonClient = ({ lessons: initialLessons }: Props) => {
     const { addStudyVersion, addPracticeVersion, addFileId } = useActions()
+    const [lessons, setLessons] = useState(initialLessons);
+    const [selectedLessons, setSelectedLessons] = useState<string[]>([]);
+    const [lessonToDelete, setLessonToDelete] = useState<string[] | null>(null);
+
+    const handleDelete = async () => {
+        if (!lessonToDelete) return;
+
+        try {
+            await deleteLessons(lessonToDelete);
+            setLessons(lessons.filter(lesson => !lessonToDelete.includes(lesson.id)));
+            setSelectedLessons([]);
+            toast.success("Lessons deleted successfully!");
+        } catch (error) {
+            toast.error("Failed to delete lessons.");
+        } finally {
+            setLessonToDelete(null);
+        }
+    };
+
+    const openConfirmationModal = (lessonIds: string[]) => {
+        setLessonToDelete(lessonIds);
+    };
+
+    const toggleSelection = (lessonId: string) => {
+        setSelectedLessons(prev =>
+            prev.includes(lessonId)
+                ? prev.filter(id => id !== lessonId)
+                : [...prev, lessonId]
+        );
+    };
 
     return (
 
         <div className="min-h-screen dark:bg-neutral-900 bg-white pt-16 px-4">
 
             <div className="max-w-5xl mx-auto">
-                <div className=' flex  justify-between'>
+                <div className=' flex  justify-between items-center'>
                     <h1 className="text-3xl font-bold mb-6 dark:text-neutral-100 text-neutral-900 ">Your Lessons : </h1>
-                    <Button><Link href={'/uploadingfile'} className=''>Create lesson</Link></Button>
-
+                    <div className="flex items-center gap-4">
+                        {selectedLessons.length > 0 && (
+                            <Button onClick={() => openConfirmationModal(selectedLessons)} variant="destructive">
+                                <FiTrash2 className="mr-2" />
+                                Delete Selected ({selectedLessons.length})
+                            </Button>
+                        )}
+                        <Button asChild>
+                            <Link href={'/uploadingfile'}>Create lesson</Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {lessons.length === 0 ? (
@@ -43,13 +85,17 @@ const LessonClient = ({ lessons }: Props) => {
                         {lessons.map((lesson) => (
                             <div
                                 key={lesson.id}
-                                className="dark:bg-neutral-800 bg-white shadow-xl rounded-xl p-5 hover:shadow-md transition cursor-pointer"
+                                className={`dark:bg-neutral-800 bg-white shadow-xl rounded-xl p-5 hover:shadow-md transition cursor-pointer border-2 ${selectedLessons.includes(lesson.id) ? 'border-blue-500' : 'border-transparent'}`}
                             >
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-lg font-semibold dark:text-neutral-100 text-neutral-900 truncate">
-                                        {lesson.title}
-                                    </h2>
-
+                                <div className="flex justify-between items-start mb-4">
+                                    <Link href={`/l/${lesson.file_id}`} className="flex-grow">
+                                        <h2 className="text-lg font-semibold dark:text-neutral-100 text-neutral-900 truncate">
+                                            {lesson.title}
+                                        </h2>
+                                    </Link>
+                                    <button onClick={() => toggleSelection(lesson.id)} className="p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700">
+                                        {selectedLessons.includes(lesson.id) ? <FiCheckSquare className="text-blue-500" /> : <FiSquare />}
+                                    </button>
                                 </div>
 
                                 <div className="space-y-2 text-sm dark:text-neutral-100 text-neutral-900">
@@ -91,23 +137,41 @@ const LessonClient = ({ lessons }: Props) => {
 
                                 </div>
 
-                                <div className="mt-4">
-                                    <Link
-
-                                        href={{
-                                            pathname: `/l/${lesson.file_id}`,
-                                            // query: { fromLibrary: "true" },
-                                        }}
-                                        className="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700"
-                                    >
-                                        Open Lesson
-                                    </Link>
+                                <div className="mt-4 flex justify-between items-center">
+                                    <Button asChild >
+                                        <Link
+                                            href={{
+                                                pathname: `/l/${lesson.file_id}`,
+                                            }}
+                                        >
+                                            <FiBookOpen className="mr-2 " />
+                                            Open Lesson
+                                        </Link>
+                                    </Button>
+                                    <Button onClick={() => openConfirmationModal([lesson.id])} variant="destructive" size="icon">
+                                        <FiTrash2 />
+                                    </Button>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+            <div className=' h-12 '>
+
+            </div>
+            <Dialog open={!!lessonToDelete} onOpenChange={() => setLessonToDelete(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                    </DialogHeader>
+                    <p>This action cannot be undone. This will permanently delete the selected lesson(s).</p>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setLessonToDelete(null)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
