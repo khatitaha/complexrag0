@@ -331,6 +331,23 @@ export async function generateLearningContentV2(docs: any[], language: string,
                     explanation: z.string()
                 })
             ),
+            roadmap: z.array(
+                z.object({
+                    title: z.string(),
+                    headlines: z.array(
+                        z.object({
+                            title: z.string(),
+                            content: z.string(),
+                            subheadlines: z.array(
+                                z.object({
+                                    title: z.string(),
+                                    content: z.string(),
+                                })
+                            ).optional(),
+                        })
+                    ),
+                })
+            ),
             title: z.string(),
 
         })
@@ -358,7 +375,7 @@ export async function generateLearningContentV2(docs: any[], language: string,
   
    go through each line of the lesson and make sure you dont skip anything and then generate lesson in ${language} which is an array of objects that has a title for each header or point of the lessson at least 4 points
  then in each lesson a clear explanation of the lesson through lines  each line has a text and an explanation for each lesson there should be at least 4 lines , then make a list of flashcards (question and answer) whihc should jave all the points of the lesson or at least the most important points of the lesson 
- make sure you make them as question and answer so the user can memorize and learn faster  there should be ${flashCount} , then make quiz which is an array of objects that has a question and 4 options and the correct answer and an explanation for each question there should be ${quizCount} questions , also ${note} also make a title out of 4 to 6 words that describe the lesson that user has uploaded in ${language} :
+ make sure you make them as question and answer so the user can memorize and learn faster  there should be ${flashCount} , then make quiz which is an array of objects that has a question and 4 options and the correct answer and an explanation for each question there should be ${quizCount} questions , also ${note} also make a title out of 4 to 6 words that describe the lesson that user has uploaded in ${language} , and a roadmap which is an array of lessons, where each lesson has a title and an array of headlines. Each headline will have a title, a content field with a brief summary or key points (less than 10 words), and an optional array of subheadlines. Each subheadline will also have a title and a content field (less than 10 words). Make sure to generate all subheadlines, not just the first one:
   
   ${formatInstructions}`,
         ],

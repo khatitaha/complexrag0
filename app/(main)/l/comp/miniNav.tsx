@@ -2,12 +2,13 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FiBookOpen, FiLayers, FiEdit3 } from 'react-icons/fi';
+import { FiBookOpen, FiLayers, FiEdit3, FiMap } from 'react-icons/fi';
 
 const navItems = [
     { label: 'Summary', icon: <FiBookOpen size={18} /> },
     { label: 'Flashcards', icon: <FiLayers size={18} /> },
     { label: 'Quiz', icon: <FiEdit3 size={18} /> },
+    { label: 'Roadmap', icon: <FiMap size={18} /> },
 ];
 
 export default function MiniNav({

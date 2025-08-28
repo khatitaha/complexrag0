@@ -33,6 +33,7 @@ export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: 
                 lesson: Tcontent.lesson,
                 flashcards: Tcontent.flashcards,
                 quiz: Tcontent.quiz,
+                roadmap: Tcontent.roadmap,
                 title: Tcontent.title,
                 user_id: data.user?.id
             })
@@ -79,6 +80,7 @@ export async function wb2Logic(filePath: string, file_id: string, language: stri
             lesson: result.lesson,
             flashcards: result.flashcards,
             quiz: result.quiz,
+            roadmap: result.roadmap,
             title: result.title,
             user_id: user?.id
         };
