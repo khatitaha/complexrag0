@@ -34,6 +34,7 @@ export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: 
                 flashcards: Tcontent.flashcards,
                 quiz: Tcontent.quiz,
                 roadmap: Tcontent.roadmap,
+                slides: Tcontent.slides,
                 title: Tcontent.title,
                 user_id: data.user?.id
             })
@@ -42,9 +43,12 @@ export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: 
 
         if (error) {
             console.error('Supabase error:', error)
+            return null;
         }
+        return content;
     } catch (err) {
         console.error('Unexpected error:', err)
+        return null;
     }
 }
 
@@ -72,17 +76,15 @@ export async function wb2Logic(filePath: string, file_id: string, language: stri
             flashCount,
             note,);
 
-        await saveLearningContentToDbFromAction(result, file_id);
+        const newLesson = await saveLearningContentToDbFromAction(result, file_id);
 
-        // Return the newly generated content
+        if (!newLesson) {
+            throw new Error("Failed to save the lesson to the database.");
+        }
+
+        // Return the newly generated content with the correct ID
         return {
-            file_id: file_id,
-            lesson: result.lesson,
-            flashcards: result.flashcards,
-            quiz: result.quiz,
-            roadmap: result.roadmap,
-            title: result.title,
-            user_id: user?.id
+            ...newLesson,
         };
 
     } catch (error) {

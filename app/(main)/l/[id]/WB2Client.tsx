@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react";
+import Slides from '../comp/sections/Slides';
 import HorizontalRoadmap from '../comp/sections/HorizontalRoadmap';
 import Summary from "../comp/sections/summury";
 import Flashcards from "../comp/sections/Flashcards";
@@ -176,6 +177,8 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                 return <Flashcards cards={flashcards} lessonId={id} />;
             case "Quiz":
                 return <Quiz quiz={quiz} />;
+            case "Slides":
+                return <Slides slides={result.slides || []} lessonId={id} />;
             case "Roadmap":
                 return <HorizontalRoadmap roadmap={result.roadmap || []} />;
             default:
