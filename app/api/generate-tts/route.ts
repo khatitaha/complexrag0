@@ -74,26 +74,24 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+
     const newSlides = await Promise.all(
       slides.map(async (slide: any, index: number) => {
-        const result = await genAI.models.generateContent({
-          model: "gemini-2.5-flash-preview-tts",
-          contents: [{ parts: [{ text: slide.text }] }],
-          config: {
-            responseModalities: ['AUDIO'],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: 'Alnilam' },
-              },
+        const textForTTS = slide.mainText.replace(/<highlight>|<\/highlight>/g, '');
+        const response = await genAI.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: textForTTS }] }],
+            config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { voiceName: 'Alnilam' },
+                    },
+                },
             },
-        }});
+        });
 
-
-
-
-        
-
-        const audioData = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!audioData) {
             throw new Error('Failed to generate audio data from Gemini');
         }
