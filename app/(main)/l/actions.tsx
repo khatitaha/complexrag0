@@ -225,3 +225,46 @@ export async function storeRagMessage(ragMessage: {
     }
 
 }
+
+export async function createLessonFromFiles(filePaths: string[], language: string, quizCount: number, flashCount: number, note: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("User not authenticated.");
+    }
+
+    try {
+        const allDocs = await Promise.all(
+            filePaths.map(async (filePath) => {
+                try {
+                    const publicUrl = `https://clxsgightqnifyrrmhrd.supabase.co/storage/v1/object/public/docs/uploads/${filePath}`;
+                    return await loadAndSplitDocument(publicUrl);
+                } catch (err) {
+                    console.error(`❌ Failed to load ${filePath}:`, err);
+                    return [];
+                }
+            })
+        );
+
+        const mergedDocs = allDocs.flat();
+
+        if (mergedDocs.length === 0) {
+            throw new Error("No content could be loaded from the provided files.");
+        }
+
+        const result = await generateLearningContentV2(mergedDocs, language, quizCount, flashCount, note);
+
+        const newLesson = await saveLearningContentToDbFromAction(result, null); // file_id is null for combined lessons
+
+        if (!newLesson) {
+            throw new Error("Failed to save the combined lesson to the database.");
+        }
+
+        return newLesson.id;
+
+    } catch (error) {
+        console.error("Error creating combined lesson from files:", error);
+        throw error;
+    }
+}

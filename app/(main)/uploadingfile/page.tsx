@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { createLessonFromFiles } from '../l/actions';
 
 const UploadPage = () => {
     const router = useRouter();
@@ -58,15 +59,27 @@ const UploadPage = () => {
             if (!response.ok) throw new Error("Upload failed");
 
             const data = await response.json();
-            if (data.fileRoute) {
+            const fileIds = data.files.map((f: any) => f.path);
+
+            if (fileIds.length > 0) {
                 setUploading(false);
                 setUploadComplete(true);
                 setGenerating(true);
-                await new Promise((res) => setTimeout(res, 1500));
-                router.push(`/l/${data.fileRoute}`);
+
+                // Call the new server action to create a combined lesson
+                const newLessonId = await createLessonFromFiles(fileIds, 'English', 5, 5, ''); // Default values for now
+
+                if (newLessonId) {
+                    router.push(`/l/${newLessonId}`);
+                } else {
+                    setError("Failed to create lesson from uploaded files.");
+                }
+            } else {
+                setError("No files were successfully uploaded.");
             }
-        } catch (err) {
-            setError("Something went wrong during upload.");
+        } catch (err: any) {
+            console.error("Error uploading file or creating lesson:", err);
+            setError(err.message || "Something went wrong during upload.");
         } finally {
             setUploading(false);
         }
@@ -99,8 +112,8 @@ const UploadPage = () => {
     };
 
     return (
-        <div className="min-h-screen dark:bg-neutral-900 bg-white p-4 sm:p-8">
-            <div className="max-w-4xl mx-auto mt-12">
+        <div className="min-h-screen dark:bg-neutral-900 bg-white p-4 sm:p-8 pt-16">
+            <div className="max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold dark:text-neutral-100 text-neutral-900 mb-8 text-center">Create a New Lesson</h1>
 
                 {/* Upload Area */}
