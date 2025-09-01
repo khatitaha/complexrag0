@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { FiUpload, FiArrowRight, FiUser, FiBook, FiHome } from 'react-icons/fi'
+import { FiUpload, FiArrowRight, FiBook, FiClipboard } from 'react-icons/fi'
 
 type Props = {}
 
@@ -49,6 +49,14 @@ const HomePage = (props: Props) => {
                                 <span className="relative z-10 flex items-center">
                                     <FiBook className="w-6 h-6 mr-2" />
                                     View Lessons
+                                </span>
+                            </button>
+                        </Link>
+                        <Link href="/exams">
+                            <button className="group relative inline-flex items-center px-8 py-4 bg-neutral-900 text-neutral-100 text-lg font-medium rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200">
+                                <span className="relative z-10 flex items-center">
+                                    <FiClipboard className="w-6 h-6 mr-2" />
+                                    Create Exam
                                 </span>
                             </button>
                         </Link>

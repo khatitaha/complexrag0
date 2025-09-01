@@ -91,7 +91,7 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                                 className={`dark:bg-neutral-800 bg-white shadow-xl rounded-xl p-5 hover:shadow-md transition cursor-pointer border-2 ${selectedLessons.includes(lesson.id) ? 'border-blue-500' : 'border-transparent'}`}
                             >
                                 <div className="flex justify-between items-start mb-4">
-                                    <Link href={`/l/${lesson.file_id}`} className="flex-grow">
+                                    <Link href={`/l/${lesson.id}`} className="flex-grow">
                                         <h2 className="text-lg font-semibold dark:text-neutral-100 text-neutral-900 truncate">
                                             {lesson.title}
                                         </h2>
@@ -144,7 +144,7 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                                     <Button asChild >
                                         <Link
                                             href={{
-                                                pathname: `/l/${lesson.file_id}`,
+                                                pathname: `/l/${lesson.id}`,
                                             }}
                                         >
                                             <FiBookOpen className="mr-2 " />

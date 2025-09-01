@@ -213,6 +213,9 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
         }
     };
 
+    const lessonType = file_id ? 'file' : 'url';
+    const ragId = file_id || id;
+
     return (
         <div className="flex dark:bg-neutral-800 bg-white relative h-screen pt-12">
 
@@ -402,7 +405,7 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                 >
 
 
-                    <ImprovedChatUI id={id} initialchat={initialChat} />
+                    <ImprovedChatUI id={ragId} initialchat={initialChat} />
                 </div>
             )}
         </div>

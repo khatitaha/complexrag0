@@ -4,7 +4,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { generateExamContentV2 } from "@/lib/utils/langchain";
-import { loadAndSplitDocument } from "@/lib/utils/langchain";
+import { loadAndSplitDocument, loadAndSplitWebPage } from "@/lib/utils/langchain";
 import { cache } from 'react';
 
 
@@ -57,7 +57,7 @@ export async function saveExamContentToDbFromAction(exam: Exam) {
 
 //get content try in db , if !exesit , try to generate , if cant generate show failure state
 
-export async function examCreationLogic(filePaths: string[]): Promise<Exam | null> {
+export async function examCreationLogic(filePaths: string[], webUrls: string[]): Promise<Exam | null> {
     const supabase = await createClient()
     const { data, error: userError } = await supabase.auth.getUser();
 
@@ -66,7 +66,7 @@ export async function examCreationLogic(filePaths: string[]): Promise<Exam | nul
 
         // 2. Generate and save
         // ✅ Load and split all docs in parallel
-        const allDocs = await Promise.all(
+        const fileDocs = await Promise.all(
             filePaths.map(async (path) => {
                 try {
                     return await loadAndSplitDocument(path); // returns an array per file
@@ -77,10 +77,25 @@ export async function examCreationLogic(filePaths: string[]): Promise<Exam | nul
             })
         );
 
-        // ✅ Merge into ONE big array
-        const mergedDocs = allDocs.flat();
+        const webDocs = await Promise.all(
+            webUrls.map(async (url) => {
+                try {
+                    return await loadAndSplitWebPage(url); // returns an array per url
+                } catch (err) {
+                    console.error(`❌ Failed to load ${url}:`, err);
+                    return [];
+                }
+            })
+        );
 
-        console.log(`✅ Merged ${mergedDocs.length} docs from ${filePaths.length} files`);
+        // ✅ Merge into ONE big array
+        const mergedDocs = [...fileDocs.flat(), ...webDocs.flat()];
+
+        if (mergedDocs.length === 0) {
+            throw new Error("No content could be loaded from the provided sources. Please check the URLs and file paths.");
+        }
+
+        console.log(`✅ Merged ${mergedDocs.length} docs from ${filePaths.length} files and ${webUrls.length} URLs`);
 
         const result = await generateExamContentV2(mergedDocs);
         console.log("just generated and now im saving   ")
@@ -116,8 +131,8 @@ export async function examCreationLogic(filePaths: string[]): Promise<Exam | nul
 
 
 
-export const getExamCreationLogic = cache(async (filePaths: string[]) => {
-    return await examCreationLogic(filePaths);
+export const getExamCreationLogic = cache(async (filePaths: string[], webUrls: string[]) => {
+    return await examCreationLogic(filePaths, webUrls);
 });
 
 
