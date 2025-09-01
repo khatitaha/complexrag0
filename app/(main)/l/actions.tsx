@@ -21,23 +21,28 @@ export type RagMessage = {
 
 
 
-export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: string) {
+export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: string | null) {
     try {
         const supabase = await createClient()
         const { data, error: userError } = await supabase.auth.getUser();
 
+        const lessonData: any = {
+            lesson: Tcontent.lesson,
+            flashcards: Tcontent.flashcards,
+            quiz: Tcontent.quiz,
+            roadmap: Tcontent.roadmap,
+            slides: Tcontent.slides,
+            title: Tcontent.title,
+            user_id: data.user?.id
+        };
+
+        if (file_id) {
+            lessonData.file_id = file_id;
+        }
+
         const { data: content, error } = await supabase
             .from('lessons')
-            .insert({
-                file_id: file_id,
-                lesson: Tcontent.lesson,
-                flashcards: Tcontent.flashcards,
-                quiz: Tcontent.quiz,
-                roadmap: Tcontent.roadmap,
-                slides: Tcontent.slides,
-                title: Tcontent.title,
-                user_id: data.user?.id
-            })
+            .insert(lessonData)
             .select()
             .single()
 
@@ -112,27 +117,35 @@ export const getCachedWb2Logic = cache(async (filePath: string, fileId: string, 
 
 
 
-export async function getLearningContentFromDb(file_id: string) {
+export async function getLessonFromDb(id: string) {
     const supabase = await createClient();
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase
+    // First, try to fetch by primary key (id)
+    let { data: lesson, error } = await supabase
         .from('lessons')
         .select('*')
-        .eq('file_id', file_id)
+        .eq('id', id)
         .eq('user_id', userData.user?.id)
+        .single();
 
-    // ⚠️ Ignore "no rows" error if that's expected
-    if (error && error.code !== 'PGRST116') {
-        console.error('Supabase fetch error:', error);
-        return null;
+    if (lesson) {
+        return lesson;
     }
 
-    if (!data || data.length === 0) {
-        return null; // Nothing found — exactly what you expect sometimes
+    // If not found, try to fetch by file_id
+    let { data: lessonByFileId, error: fileError } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('file_id', id)
+        .eq('user_id', userData.user?.id)
+        .single();
+    
+    if (fileError && fileError.code !== 'PGRST116') { // PGRST116 is the code for no rows found
+        console.error('Supabase fetch error:', fileError);
     }
 
-    return data[0]; // Return the first match
+    return lessonByFileId;
 }
 
 

@@ -287,7 +287,7 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                         </div>
 
                         {/* Document Controls */}
-                        {showMain && (
+                        {file_id && showMain && (
                             <div className="mt-3 pt-3 border-t border-neutral-600">
                                 <div className="dark:text-white text-sm font-semibold mb-2 text-center text-black">Document</div>
                                 <div className="flex flex-col space-y-2">
@@ -363,7 +363,7 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                         </div>
 
                         {/* Document Viewer */}
-                        {showDocument && (
+                        {file_id && showDocument && (
                             <div
                                 className="flex flex-col bg-neutral-900"
                                 style={{ width: getDocumentWidth() }}
@@ -402,7 +402,7 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                 >
 
 
-                    <ImprovedChatUI id={file_id} initialchat={initialChat} />
+                    <ImprovedChatUI id={id} initialchat={initialChat} />
                 </div>
             )}
         </div>

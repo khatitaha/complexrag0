@@ -26,11 +26,11 @@ const HomePage = (props: Props) => {
                     </div>
 
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                        Upload Your Lesson
+                        Create Your Lesson
                     </h1>
 
                     <p className="dark:text-neutral-400 text-neutral-600 mb-12 max-w-md mx-auto text-lg">
-                        Transform your study materials into interactive learning content
+                        Transform your study materials or web links into interactive learning content
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -38,7 +38,7 @@ const HomePage = (props: Props) => {
                             <button className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-medium rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                                 <span className="relative z-10 flex items-center">
                                     <FiUpload className="w-6 h-6 mr-2" />
-                                    Upload Lesson
+                                    Create Lesson
                                     <FiArrowRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" />
                                 </span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

@@ -5,6 +5,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
+import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 
 
@@ -77,6 +78,17 @@ export async function loadAndSplitDocument(fileUrl: string) {
         await fs.unlink(tempFilePath).catch(() => { });
     }
 
+}
+
+export async function loadAndSplitWebPage(url: string) {
+    const loader = new CheerioWebBaseLoader(url);
+    const docs = await loader.load();
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+    });
+    const splitDocs = await splitter.splitDocuments(docs);
+    return splitDocs;
 }
 
 
@@ -209,9 +221,8 @@ export async function generateExam(docs: any[]) {
 
 
 
+
 ////: new version of the langchain 
-
-
 
 
 
@@ -265,7 +276,9 @@ export async function generateLearningContentV1(docs: any[]) {
         return str.replace(/[{]/g, "{{").replace(/[}]/g, "}}");
     }
 
-    const formatInstructions = escapeCurlyBraces(parser.getFormatInstructions());
+    const formatInstructions = escapeCurlyBraces(
+        docs.map((d) => d.pageContent).join("\n\n")
+    );
     const escapedInput = escapeCurlyBraces(
         docs.map((d) => d.pageContent).join("\n\n")
     );
@@ -466,74 +479,3 @@ export async function generateExamContentV2(docs: any[]) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-////: new version of the langchain 
-
-export async function generateExamContentV1(docs: any[]) {
-    const model = new ChatGroq({
-        apiKey: process.env.GROQ_API_KEY, // Default value.
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
-        temperature: 0.3,
-    });
-
-    const parser = StructuredOutputParser.fromZodSchema(
-        z.object({
-            exam: z.array(
-                z.object({
-                    question: z.string(),
-                    options: z.array(z.string()).length(4),
-                    correctAnswer: z.number().min(0).max(3),
-                })
-            ),
-            exercises: z.array(
-                z.object({
-                    question: z.string(),
-                    options: z.array(z.string()).length(4),
-                    correctAnswer: z.number().min(0).max(3),
-                    explanation: z.string()
-                })
-            ),
-        })
-    );
-
-    function escapeCurlyBraces(str: string) {
-        return str.replace(/[{]/g, "{{").replace(/[}]/g, "}}");
-    }
-
-    const formatInstructions = escapeCurlyBraces(parser.getFormatInstructions());
-    const escapedInput = escapeCurlyBraces(
-        docs.map((d) => d.pageContent).join("\n\n")
-    );
-
-    const prompt = ChatPromptTemplate.fromMessages([
-        [
-            "system",
-            "You are an expert educator. Read the content and create structured exams and exercices material in JSON format.",
-        ],
-        [
-            "human",
-            `Here is the document content:
-  
-  {input}
-  
-  Generate several exercices for user to learn the lesson by exercices then an exam that covers all aspects of the lesson, Return only JSON in this format:
-  
-  ${formatInstructions}`,
-        ],
-    ]);
-
-    const chain = prompt.pipe(model).pipe(parser);
-    const result = await chain.invoke({ input: escapedInput });
-    console.log("result", result)
-    return result;
-}

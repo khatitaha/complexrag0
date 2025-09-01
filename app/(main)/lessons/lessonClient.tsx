@@ -75,6 +75,9 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                         <Button asChild>
                             <Link href={'/uploadingfile'}>Create lesson</Link>
                         </Button>
+                        <Button asChild variant="outline">
+                            <Link href={'/create-from-url'}>Create from URL</Link>
+                        </Button>
                     </div>
                 </div>
 

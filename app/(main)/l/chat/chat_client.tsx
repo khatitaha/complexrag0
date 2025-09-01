@@ -68,7 +68,7 @@ const characters = [
 
 
 
-function useTutorChat({ filePathId, initialMessages, chatCharacterId }: { filePathId: string, initialMessages: RagMessage[], chatCharacterId: string }) {
+function useTutorChat({ lessonId, initialMessages, chatCharacterId }: { lessonId: string, initialMessages: RagMessage[], chatCharacterId: string }) {
     // Chat state from Vercel AI
     const {
         messages,
@@ -80,8 +80,7 @@ function useTutorChat({ filePathId, initialMessages, chatCharacterId }: { filePa
     } = useChat({
         api: "/api/chatWithRev",
         body: {
-            // userId: "test-user-123",
-            conversationId: filePathId,
+            conversationId: lessonId,
             characterId: chatCharacterId,
         },
         initialMessages: initialMessages.map(msg => ({
@@ -99,21 +98,20 @@ function useTutorChat({ filePathId, initialMessages, chatCharacterId }: { filePa
 
 
     const fireRag = async () => {
-        console.log("fireRag", filePathId);
+        console.log("fireRag for lesson:", lessonId);
         setRagLoading(true);
         setRagError(null);
         try {
-            const res = await fetch("/api/rag", {
+            const res = await fetch("/api/prepare-rag-from-lesson", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ filePathId }),
-                /// here send whihc character selcted
+                body: JSON.stringify({ lessonId }),
             });
-            if (!res.ok) throw new Error("RAG failed");
+            if (!res.ok) throw new Error("RAG preparation failed");
             setRagSuccess(true);
         } catch (err) {
             console.log(err);
-            setRagError("❌ RAG failed");
+            setRagError("❌ RAG preparation failed");
         } finally {
             setRagLoading(false);
         }
@@ -152,7 +150,7 @@ export default function ImprovedChatUI({ id, initialchat }: { id: string, initia
         return initialchat && initialchat.length > 0 ? "chat" : "intro";
     });
     // const filePath = `https://clxsgightqnifyrrmhrd.supabase.co/storage/v1/object/public/docs/uploads/${id}`;
-    const chat = useTutorChat({ filePathId: id, initialMessages: initialchat || [], chatCharacterId: chatCharacter?.id ?? "doc-alby" });
+    const chat = useTutorChat({ lessonId: id, initialMessages: initialchat || [], chatCharacterId: chatCharacter?.id ?? "doc-alby" });
 
     // Track the last stored message to avoid duplicate storage
     const lastStoredMessageRef = useRef<string | null>(null);
