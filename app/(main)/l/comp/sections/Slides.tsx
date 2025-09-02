@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlay, FiPause, FiChevronLeft, FiChevronRight, FiZap, FiBookOpen, FiTarget, FiAward } from 'react-icons/fi';
+import { FiPlay, FiPause, FiChevronLeft, FiChevronRight, FiZap, FiBookOpen, FiTarget, FiAward, FiMic, FiHeadphones, FiTrendingUp, FiClock, FiLoader } from 'react-icons/fi';
 import { FaRegLightbulb } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -130,12 +130,46 @@ const Slides = ({ slides: initialSlides, lessonId }: { slides: Slide[], lessonId
 
     if (!hasNarration) {
         return (
-            <div className="flex items-center justify-center h-full p-4 bg-gray-100 dark:bg-neutral-900">
-                <Card className="w-full max-w-lg shadow-xl">
-                    <CardHeader><CardTitle className="text-center text-2xl">Generate Audio Narration</CardTitle></CardHeader>
-                    <CardContent className="text-center">
-                        <p className="mb-6 text-muted-foreground">This lesson does not have audio narration yet. Click the button below to generate it.</p>
-                        <Button onClick={handleGenerateAudio} disabled={isGenerating} size="lg">{isGenerating ? 'Generating...' : 'Generate Audio'}</Button>
+            <div className="flex items-center justify-center h-full p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800">
+                <Card className="w-full max-w-lg shadow-2xl rounded-2xl overflow-hidden border-0">
+                    <div className="p-8 bg-gradient-to-tr from-green-500 to-cyan-600 text-white text-center">
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        >
+                            <FiMic className="w-16 h-16 mx-auto mb-4" />
+                        </motion.div>
+                        <h2 className="text-3xl font-bold">Bring Your Lesson to Life</h2>
+                        <p className="mt-2 opacity-90">Generate audio narration to listen and learn on the go.</p>
+                    </div>
+                    <CardContent className="p-8 text-center bg-white dark:bg-neutral-900">
+                        <p className="mb-6 text-muted-foreground">
+                            Transform your slides into an engaging audio experience. This allows for hands-free learning and can improve retention.
+                        </p>
+                        <ul className="text-left mb-8 space-y-2 text-sm text-muted-foreground">
+                            <li className="flex items-center"><FiHeadphones className="mr-3 text-blue-500"/>Listen anywhere, anytime.</li>
+                            <li className="flex items-center"><FiTrendingUp className="mr-3 text-green-500"/>Reinforce concepts through listening.</li>
+                            <li className="flex items-center"><FiClock className="mr-3 text-purple-500"/>Save time by multitasking.</li>
+                        </ul>
+                        <Button
+                            onClick={handleGenerateAudio}
+                            disabled={isGenerating}
+                            size="lg"
+                            className="w-full font-semibold text-lg py-6 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 transform hover:scale-105"
+                        >
+                            {isGenerating ? (
+                                <span className="flex items-center justify-center">
+                                    <FiLoader className="animate-spin mr-3" />
+                                    Generating...
+                                </span>
+                            ) : (
+                                <span className="flex items-center justify-center">
+                                    <FiPlay className="mr-3" />
+                                    Generate Audio
+                                </span>
+                            )}
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

@@ -36,6 +36,28 @@ export async function POST(request: NextRequest) {
         for (const file of files) {
             if (!(file instanceof File)) continue
 
+            // Validate file type (MIME type)
+            const allowedMimeTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'text/plain',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+            ];
+            if (!allowedMimeTypes.includes(file.type)) {
+                console.warn(`Skipping file ${file.name}: Invalid MIME type ${file.type}`);
+                continue;
+            }
+
+            // Validate file size (e.g., max 20MB)
+            const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+            if (file.size > MAX_FILE_SIZE) {
+                console.warn(`Skipping file ${file.name}: File size ${file.size} exceeds limit ${MAX_FILE_SIZE}`);
+                continue;
+            }
+
             const bytes = await file.arrayBuffer()
             const buffer = Buffer.from(bytes)
 

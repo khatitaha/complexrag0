@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(newSlides, { status: 200 });
   } catch (error) {
     console.error('TTS Generation Error:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 

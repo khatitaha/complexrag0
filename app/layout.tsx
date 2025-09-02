@@ -10,8 +10,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Study Hub - Your AI Learning Assistant",
-  description: "Upload your study materials and get AI-generated flashcards, summaries, and practice exams",
+  title: "AzamStudying - Your AI Learning Assistant",
+  description: "Upload your study materials and get AI-generated flashcards, summaries, and practice exams and slides with tts and so much more, best and easiest way to learn ",
 };
 
 const geistSans = Geist({

@@ -9,7 +9,7 @@ const DocPage = async (props: Props) => {
     const { data, error } = await supabase
         .from('documents')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id).order('created_at', { ascending: false })
     console.log("we got the data ", data);
     if (error) {
         console.error('Error fetching documents for user:', error)

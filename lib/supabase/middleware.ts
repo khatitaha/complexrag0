@@ -8,7 +8,8 @@ export async function updateSession(request: NextRequest) {
   });
 
   // If the env vars are not set, skip middleware check. You can remove this once you setup the project.
-  if (!hasEnvVars) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn("Supabase environment variables are not set. Skipping middleware authentication check.");
     return supabaseResponse;
   }
 
@@ -56,6 +57,21 @@ export async function updateSession(request: NextRequest) {
   //   url.pathname = "/auth/login";
   //   return NextResponse.redirect(url);
   // }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (
+    request.nextUrl.pathname !== "/" &&
+    !user &&
+    !request.nextUrl.pathname.startsWith("/auth")
+  ) {
+    // no user, potentially respond by redirecting the user to the login page
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/login";
+    return NextResponse.redirect(url);
+  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { loadAndSplitWebPage } from '@/lib/utils/langchain';
-import { generateLearningContentV2 } from '@/lib/utils/langchain';
-import { saveLearningContentToDbFromAction } from '@/app/(main)/l/actions';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,24 +16,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing url' }, { status: 400 });
     }
 
-    const docs = await loadAndSplitWebPage(url);
-    
-    // Using default values for quizCount, flashCount, and note for now
-    const learningContent = await generateLearningContentV2(docs, 'English', 5, 5, '');
+    // Basic URL validation
+    const urlRegex = /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/;
+    if (!urlRegex.test(url)) {
+      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+    }
 
-    // We need a way to save content that doesn't have a file_id.
-    // For now, we will pass null for the file_id.
-    // This will require a change in the saveLearningContentToDbFromAction function.
-    const newLesson = await saveLearningContentToDbFromAction(learningContent, null);
+    // Create a pending lesson record in the database
+    const { data: newLesson, error } = await supabase
+      .from("lessons")
+      .insert({
+        user_id: user.id,
+        status: "pending",
+        url: url,
+        // Provide default empty values for NOT NULL columns
+        lesson: [],
+        flashcards: [],
+        quiz: [],
+        roadmap: [],
+        slides: [],
+        title: 'New Lesson'
+      })
+      .select()
+      .single();
 
-    if (!newLesson) {
-      throw new Error('Failed to save lesson to database');
+    if (error) {
+      console.error("Error creating pending lesson:", error);
+      return NextResponse.json({ error: 'Failed to create pending lesson' }, { status: 500 });
     }
 
     return NextResponse.json({ lessonId: newLesson.id }, { status: 200 });
 
   } catch (error) {
     console.error('Lesson from URL error:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

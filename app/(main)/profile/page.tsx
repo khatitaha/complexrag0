@@ -28,7 +28,7 @@ export default async function ProfilePage() {
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-900 transition-colors duration-300 p-6">
             <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-2xl p-8 w-full max-w-xl transition-colors duration-300">
                 <div className="flex flex-col items-center mb-8">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 dark:from-blue-700 dark:to-purple-800 flex items-center justify-center text-3xl font-bold text-white mb-4 shadow-lg overflow-hidden">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-cyan-600  flex items-center justify-center text-3xl font-bold text-white mb-4 shadow-lg overflow-hidden hover:scale-105 translate-all duration-200">
                         {profile.avatar_url ? (
                             <img
                                 src={profile.avatar_url}

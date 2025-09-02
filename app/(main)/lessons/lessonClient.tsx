@@ -64,7 +64,7 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
 
             <div className="max-w-5xl mx-auto">
                 <div className=' flex  justify-between items-center'>
-                    <h1 className="text-3xl font-bold mb-6 dark:text-neutral-100 text-neutral-900 ">Your Lessons : </h1>
+                    <h1 className="text-3xl font-bold mb-6 dark:text-neutral-100 text-neutral-900  ">Your Lessons : </h1>
                     <div className="flex items-center gap-4">
                         {selectedLessons.length > 0 && (
                             <Button onClick={() => openConfirmationModal(selectedLessons)} variant="destructive">
@@ -72,11 +72,8 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                                 Delete Selected ({selectedLessons.length})
                             </Button>
                         )}
-                        <Button asChild>
+                        <Button asChild className='group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-cyan-600 text-white text-lg rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 shadow-lg font-semibold'>
                             <Link href={'/uploadingfile'}>Create lesson</Link>
-                        </Button>
-                        <Button asChild variant="outline">
-                            <Link href={'/create-from-url'}>Create from URL</Link>
                         </Button>
                     </div>
                 </div>
@@ -91,8 +88,8 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                                 className={`dark:bg-neutral-800 bg-white shadow-xl rounded-xl p-5 hover:shadow-md transition cursor-pointer border-2 ${selectedLessons.includes(lesson.id) ? 'border-blue-500' : 'border-transparent'}`}
                             >
                                 <div className="flex justify-between items-start mb-4">
-                                    <Link href={`/l/${lesson.id}`} className="flex-grow">
-                                        <h2 className="text-lg font-semibold dark:text-neutral-100 text-neutral-900 truncate">
+                                    <Link href={`/l/${lesson.file_id || lesson.id}`} className="flex-grow min-w-0">
+                                        <h2 className="text-lg font-semibold dark:text-neutral-100 text-neutral-900 truncate w-full">
                                             {lesson.title}
                                         </h2>
                                     </Link>
@@ -107,45 +104,42 @@ const LessonClient = ({ lessons: initialLessons }: Props) => {
                                             <FiBookOpen className="text-indigo-500" />
                                             <span>Summary</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <FiClipboard className="text-green-500" />
-                                            <span>Flashcards: {lesson.flashcards.length}</span>
+                                         <div className="flex items-center gap-2">
+                                            <FiFileText className="text-pink-500" />
+                                            <span>Roadmap</span>
                                         </div>
+                                       
 
                                     </div>
 
                                     <div className='flex justify-between'>
-                                        <div className="flex items-center gap-2">
-                                            <FiFileText className="text-yellow-500" />
-                                            <span>Explanations: {lesson.quiz.length}</span>
+                                         <div className="flex items-center gap-2">
+                                            <FiPlay className="text-red-500" />
+                                            <span>Exercises {lesson.quiz.length}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <FiFileText className="text-pink-500" />
-                                            <span>Roadmaps: {lesson.quiz.length}</span>
+                                    
+                                         <div className="flex items-center gap-2">
+                                            <FiClipboard className="text-green-500" />
+                                            <span>Flashcards: {lesson.flashcards.length}</span>
                                         </div>
+                                       
                                     </div>
 
                                     <div className='flex  justify-between gap-2'>
 
-                                        <div className="flex items-center gap-2">
-                                            <FiPlay className="text-red-500" />
-                                            <span>Exercises {lesson.quiz.length}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <FiPlay className="text-purple-500" />
-                                            <span>Exams: {lesson.quiz.length}</span>
-                                        </div>
+                                       
                                     </div>
 
 
                                 </div>
 
-                                <div className="mt-4 flex justify-between items-center">
-                                    <Button asChild >
-                                        <Link
+                                <div className="mt-4 flex justify-between items-center ">
+                                    <Button asChild  className=' bg-cyan-500 hover:bg-cyan-600 text-neutral-100 dark:text-white'>
+                                        <Link className=' font-semibold   rounded-lg px-4 py-2 '
                                             href={{
-                                                pathname: `/l/${lesson.id}`,
+                                                pathname: `/l/${lesson.file_id || lesson.id}`,
                                             }}
+                                            
                                         >
                                             <FiBookOpen className="mr-2 " />
                                             Open Lesson

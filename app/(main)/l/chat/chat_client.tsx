@@ -395,7 +395,7 @@ export default function ImprovedChatUI({ id, initialchat }: { id: string, initia
 
             {/* HEADER */}
             <div
-                className="flex-shrink-0 backdrop-blur border-b border-neutral-700 px-4 py-3 "
+                className="flex-shrink-0 backdrop-blur border-b border-neutral-700 px-4 py-3  "
                 style={{
                     backgroundColor: `${chatCharacter?.color || "#1e293b"}22`
                 }}

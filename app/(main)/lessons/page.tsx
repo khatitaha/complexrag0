@@ -11,7 +11,7 @@ const LessonsPage = async (props: Props) => {
     const { data, error } = await supabase
         .from('lessons')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id).order('created_at', { ascending: false })
     console.log("we got the data ", data);
     if (error) {
         console.error('Error fetching lessons for user:', error)

@@ -18,14 +18,16 @@ const WB0Page = async (props: Props) => {
     // First, try to fetch the lesson content from the database
     const result = await getLessonFromDb(id);
 
-    if (result) {
-        // If the lesson content exists, fetch the chat and display the lesson
+    // Case 1: Lesson exists and is fully generated
+    if (result && result.status === 'completed' && result.lesson) {
         const initialChat = await getStoredMessages(result.file_id || result.id);
         return <LessonPage result={result} initialChat={initialChat || []} />;
-    } else {
-        // If the lesson content does not exist, show the configurator for file-based lessons
-        return <LessonConfigurator id={id} />;
     }
+
+    // Case 2: Lesson is pending (from URL) or doesn't exist yet (from file upload)
+    // In both scenarios, we show the configurator.
+    // We pass the fetched result (if it exists) to the configurator for URL-based lessons.
+    return <LessonConfigurator id={id} initialLessonData={result} />;
 };
 
 export default WB0Page;

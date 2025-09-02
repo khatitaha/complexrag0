@@ -4,7 +4,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { generateLearningContentV2 } from "@/lib/utils/langchain";
-import { loadAndSplitDocument } from "@/lib/utils/langchain";
+import { loadAndSplitDocument, loadAndSplitWebPage } from "@/lib/utils/langchain";
 import { cache } from 'react';
 
 export type RagMessage = {
@@ -19,28 +19,84 @@ export type RagMessage = {
 
 }
 
+export type Lesson = {
+    id: string;
+    created_at: string;
+    user_id: string;
+    status: 'pending' | 'generating' | 'completed' | 'failed';
+    file_id: string | null;
+    file_paths: string[] | null; // For lessons created from multiple files
+    url: string | null; // For lessons created from a URL
+    lesson: any | null;
+    flashcards: any | null;
+    quiz: any | null;
+    roadmap: any | null;
+    slides: any | null;
+    title: string | null;
+};
+
+export type GeneratedLearningContent = {
+    lesson: Array<{
+        title: string;
+        lines: Array<{
+            text: string;
+            explanation: string;
+        }>;
+    }>;
+    flashcards: Array<{
+        question: string;
+        answer: string;
+    }>;
+    quiz: Array<{
+        question: string;
+        options: string[];
+        answer: number;
+        explanation: string;
+    }>;
+    slides: Array<{
+        title: string;
+        mainText: string;
+        keyPoints: string[];
+        emojis: string[];
+        illustration_idea: string;
+    }>;
+    roadmap: Array<{
+        title: string;
+        headlines: Array<{
+            title: string;
+            content: string;
+            subheadlines?: Array<{
+                title: string;
+                content: string;
+            }>;
+        }>;
+    }>;
+    title: string;
+};
 
 
-export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: string | null) {
+
+export async function saveLearningContentToDbFromAction(Tcontent: GeneratedLearningContent, file_id: string | null) {
     try {
         const supabase = await createClient()
-        const { data, error: userError } = await supabase.auth.getUser();
+        const { data } = await supabase.auth.getUser(); // Removed userError
 
-        const lessonData: any = {
+        const lessonData: Partial<Lesson> = { // Use Partial<Lesson> as we are only setting some fields
             lesson: Tcontent.lesson,
             flashcards: Tcontent.flashcards,
             quiz: Tcontent.quiz,
             roadmap: Tcontent.roadmap,
             slides: Tcontent.slides,
             title: Tcontent.title,
-            user_id: data.user?.id
+            user_id: data.user?.id,
+            status: 'completed'
         };
 
         if (file_id) {
             lessonData.file_id = file_id;
         }
 
-        const { data: content, error } = await supabase
+        const { data: newLesson, error } = await supabase // Renamed 'content' to 'newLesson' for clarity
             .from('lessons')
             .insert(lessonData)
             .select()
@@ -50,7 +106,7 @@ export async function saveLearningContentToDbFromAction(Tcontent: any, file_id: 
             console.error('Supabase error:', error)
             return null;
         }
-        return content;
+        return newLesson;
     } catch (err) {
         console.error('Unexpected error:', err)
         return null;
@@ -70,10 +126,6 @@ export async function wb2Logic(filePath: string, file_id: string, language: stri
     const { data: { user } } = await supabase.auth.getUser();
 
     try {
-        // We no longer need to check for existing content here,
-        // as the page component does that now.
-        // We can go straight to generating the content.
-
         console.log("Generating new lesson content...");
 
         const docs = await loadAndSplitDocument(filePath);
@@ -81,16 +133,41 @@ export async function wb2Logic(filePath: string, file_id: string, language: stri
             flashCount,
             note,);
 
-        const newLesson = await saveLearningContentToDbFromAction(result, file_id);
+        // Check if a lesson for this file_id already exists for the user
+        const { data: existingLesson } = await supabase
+            .from('lessons')
+            .select('id')
+            .eq('file_id', file_id)
+            .eq('user_id', user?.id)
+            .maybeSingle(); // Use maybeSingle to avoid error if no lesson is found
 
-        if (!newLesson) {
-            throw new Error("Failed to save the lesson to the database.");
+        if (existingLesson) {
+            // If it exists, update it
+            const { data: updatedLesson, error } = await supabase
+                .from('lessons')
+                .update({
+                    lesson: result.lesson,
+                    flashcards: result.flashcards,
+                    quiz: result.quiz,
+                    roadmap: result.roadmap,
+                    slides: result.slides,
+                    title: result.title,
+                    status: 'completed',
+                })
+                .eq('id', existingLesson.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return updatedLesson;
+        } else {
+            // Otherwise, insert a new lesson
+            const newLesson = await saveLearningContentToDbFromAction(result, file_id);
+            if (!newLesson) {
+                throw new Error("Failed to save the new lesson to the database.");
+            }
+            return newLesson;
         }
-
-        // Return the newly generated content with the correct ID
-        return {
-            ...newLesson,
-        };
 
     } catch (error) {
         console.error("wb2Logic error", error);
@@ -122,7 +199,7 @@ export async function getLessonFromDb(id: string) {
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
     // First, try to fetch by primary key (id)
-    let { data: lesson, error } = await supabase
+    const { data: lesson, error: lessonError } = await supabase // Renamed 'error' to 'lessonError'
         .from('lessons')
         .select('*')
         .eq('id', id)
@@ -134,7 +211,7 @@ export async function getLessonFromDb(id: string) {
     }
 
     // If not found, try to fetch by file_id
-    let { data: lessonByFileId, error: fileError } = await supabase
+    const { data: lessonByFileId, error: fileError } = await supabase
         .from('lessons')
         .select('*')
         .eq('file_id', id)
@@ -266,5 +343,69 @@ export async function createLessonFromFiles(filePaths: string[], language: strin
     } catch (error) {
         console.error("Error creating combined lesson from files:", error);
         throw error;
+    }
+}
+
+export async function generateLessonFromUrl(
+    lessonId: string,
+    language: string,
+    quizCount: number,
+    flashCount: number,
+    note: string
+) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("User not authenticated.");
+    }
+
+    try {
+        // 1. Fetch the pending lesson to get the URL
+        const { data: lesson, error: fetchError } = await supabase
+            .from('lessons')
+            .select('url')
+            .eq('id', lessonId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (fetchError || !lesson || !lesson.url) {
+            throw new Error(`Failed to fetch pending lesson or URL not found for lesson ${lessonId}`);
+        }
+
+        // 2. Load and split content from the URL
+        const docs = await loadAndSplitWebPage(lesson.url);
+
+        // 3. Generate the learning content
+        const Tcontent = await generateLearningContentV2(docs, language, quizCount, flashCount, note);
+
+        // 4. Update the existing lesson record with the new content
+        const { data: updatedLesson, error: updateError } = await supabase
+            .from('lessons')
+            .update({
+                lesson: Tcontent.lesson,
+                flashcards: Tcontent.flashcards,
+                quiz: Tcontent.quiz,
+                roadmap: Tcontent.roadmap,
+                slides: Tcontent.slides,
+                title: Tcontent.title,
+                status: 'completed', // Update status to completed
+            })
+            .eq('id', lessonId)
+            .select()
+            .single();
+
+        if (updateError) {
+            console.error('Supabase update error:', updateError);
+            throw new Error("Failed to update the lesson in the database.");
+        }
+
+        return updatedLesson;
+
+    } catch (error) {
+        console.error("Error generating lesson from URL:", error);
+        // Optionally, update the lesson status to 'failed'
+        await supabase.from('lessons').update({ status: 'failed' }).eq('id', lessonId);
+        return null;
     }
 }

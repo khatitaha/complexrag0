@@ -23,7 +23,7 @@ const UploadPage = () => {
     const [urlError, setUrlError] = useState<string | null>(null);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        setFiles(prev => [...prev, ...acceptedFiles]);
+        setFiles(acceptedFiles);
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -33,7 +33,8 @@ const UploadPage = () => {
             'application/msword': ['.doc'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
             'text/plain': ['.txt'],
-        }
+        },
+        multiple: false,
     });
 
     const removeFile = (index: number) => {
@@ -62,18 +63,8 @@ const UploadPage = () => {
             const fileIds = data.files.map((f: any) => f.path);
 
             if (fileIds.length > 0) {
-                setUploading(false);
-                setUploadComplete(true);
-                setGenerating(true);
-
-                // Call the new server action to create a combined lesson
-                const newLessonId = await createLessonFromFiles(fileIds, 'English', 5, 5, ''); // Default values for now
-
-                if (newLessonId) {
-                    router.push(`/l/${newLessonId}`);
-                } else {
-                    setError("Failed to create lesson from uploaded files.");
-                }
+                const newFileId = fileIds[0];
+                router.push(`/l/${newFileId}`);
             } else {
                 setError("No files were successfully uploaded.");
             }
@@ -113,11 +104,11 @@ const UploadPage = () => {
 
     return (
         <div className="min-h-screen dark:bg-neutral-900 bg-white p-4 sm:p-8 pt-16">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto mt-10">
                 <h1 className="text-3xl font-bold dark:text-neutral-100 text-neutral-900 mb-8 text-center">Create a New Lesson</h1>
 
                 {/* Upload Area */}
-                <Card className="w-full shadow-lg mb-12">
+                <Card className="w-full shadow-lg mb-12 dark:bg-neutral-800">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><FiUpload /> Upload a File</CardTitle>
                     </CardHeader>
@@ -131,7 +122,7 @@ const UploadPage = () => {
                             <input {...getInputProps()} />
                             <FiUpload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                             <p className="text-lg dark:text-neutral-200 text-neutral-800 mb-2">
-                                {isDragActive ? "Drop your files here" : "Drag & drop files, or click to select"}
+                                {isDragActive ? "Drop your file here" : "Drag & drop a file, or click to select"}
                             </p>
                             <p className="text-sm text-neutral-500">Supports PDF, DOCX, and TXT</p>
                         </div>
@@ -143,7 +134,7 @@ const UploadPage = () => {
 
                         {files.length > 0 && (
                             <div className="mt-6">
-                                <h3 className="text-lg font-semibold mb-3">Selected Files:</h3>
+                                <h3 className="text-lg font-semibold mb-3">Selected File:</h3>
                                 <div className="space-y-3">
                                     {files.map((file, index) => (
                                         <div key={index} className="flex items-center justify-between dark:bg-neutral-800 bg-neutral-100 p-3 rounded-lg">
@@ -158,7 +149,7 @@ const UploadPage = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <Button onClick={handleUpload} disabled={uploading || uploadComplete} className="mt-6 w-full" size="lg">
+                                <Button onClick={handleUpload} disabled={uploading || uploadComplete} className="mt-6 w-full bg-green-400 text-black hover:bg-green-500" size="lg">
                                     {uploading ? 'Uploading...' : uploadComplete ? <><FiCheck className="mr-2" /> Uploaded</> : 'Upload & Generate'}
                                 </Button>
                             </div>
@@ -174,9 +165,9 @@ const UploadPage = () => {
                 </div>
 
                 {/* URL Creation Area */}
-                <Card className="w-full shadow-lg">
+                <Card className="w-full shadow-lg dark:bg-neutral-800">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><FiLink /> Create from URL</CardTitle>
+                        <CardTitle className="flex items-center gap-2 bg-cyan"><FiLink /> Create from URL</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleUrlSubmit} className="space-y-4">
@@ -190,9 +181,10 @@ const UploadPage = () => {
                                     onChange={(e) => setUrl(e.target.value)}
                                     required
                                     disabled={isUrlLoading}
+                                    className='border dark:border-neutral-600'
                                 />
                             </div>
-                            <Button type="submit" disabled={isUrlLoading} className="w-full" size="lg">
+                            <Button type="submit" disabled={isUrlLoading} className="w-full bg-cyan-400 text-black hover:bg-cyan-500" size="lg">
                                 {isUrlLoading ? 'Generating Lesson...' : 'Generate from URL'}
                             </Button>
                             {urlError && <p className="text-sm text-red-500 text-center pt-2">{urlError}</p>}

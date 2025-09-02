@@ -73,6 +73,11 @@ export async function POST(req: Request) {
             return new Response('Lesson not found', { status: 404 });
         }
 
+        // Authorization check: Ensure the lesson belongs to the authenticated user
+        if (lesson.user_id !== userId) {
+            return new Response('Forbidden: You do not have access to this lesson', { status: 403 });
+        }
+
         const lessonText = lesson.slides.map((slide: any) => slide.mainText || slide.text).join('\n\n');
 
         const splitter = new RecursiveCharacterTextSplitter({

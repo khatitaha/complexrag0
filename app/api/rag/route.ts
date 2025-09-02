@@ -56,6 +56,18 @@ export async function POST(req: Request) {
         return new Response('Unauthorized', { status: 401 });
     }
     const userId = user.id;
+
+    // Verify that the filePathId belongs to the authenticated user
+    const { data: document, error: docError } = await supabase
+        .from('documents') // Assuming a 'documents' table exists
+        .select('id')
+        .eq('id', filePathId)
+        .eq('user_id', userId)
+        .single();
+
+    if (docError || !document) {
+        return new Response('Forbidden: You do not have access to this document.', { status: 403 });
+    }
     // Generate conversationId
     const filePath = `https://clxsgightqnifyrrmhrd.supabase.co/storage/v1/object/public/docs/uploads/${filePathId}`;
 

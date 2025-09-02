@@ -9,7 +9,7 @@ const examPage = async (props: Props) => {
     const { data: docs, error } = await supabase
         .from('documents')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id).order('created_at', { ascending: false })
     console.log("we got the data ", docs);
 
     const { data: exams, error: examError } = await supabase
