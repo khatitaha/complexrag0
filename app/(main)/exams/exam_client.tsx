@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { examCreationLogic } from "./actions";
-import { FiFileText, FiLink, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiFileText, FiLink, FiPlus, FiTrash2, FiClipboard, FiTrendingUp, FiClock, FiStar, FiTarget, FiBookOpen, FiZap } from 'react-icons/fi';
 
 type Doc = {
     id: string;
@@ -144,74 +144,248 @@ const ExamsClient = (props: Props) => {
     };
 
     return (
-        <div className="dark:bg-neutral-950 bg-white dark:text-neutral-100 text-neutral-900 h-full p-6 space-y-6 pt-16">
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">📚 Exams : </h1>
-                <Button onClick={() => setIsOpen(true)}>+ Create Exam</Button>
+        <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pt-16 px-4">
+            {/* Background Elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {exams.map((exam) => (
-                    <Link
-                        key={exam.examId}
-                        className="rounded-xl dark:bg-neutral-900 bg-white border shadow-xl  hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors p-4 flex flex-col gap-2" href={`/exams/${exam.examId}`}>
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-xl font-semibold flex items-center gap-2">
-                                {exam.emoji} {exam.title}
-                            </h3>
-                            <button
-                                onClick={(e) => { e.preventDefault(); setDeleteExamId(exam.examId); }}
-                                className="text-red-500 hover:text-red-600 text-sm"
-                            >
-                                🗑️ Delete
-                            </button>
+            <div className="relative max-w-7xl mx-auto">
+                {/* Header Section */}
+                <div className="text-center mb-12">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full px-4 py-2 border border-purple-500/20 mb-6">
+                        <FiTarget className="w-4 h-4 text-purple-500" />
+                        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">Test Your Knowledge</span>
+                    </div>
+
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 dark:from-white dark:via-neutral-100 dark:to-white bg-clip-text text-transparent mb-4">
+                        Your Exams
+                    </h1>
+
+                    <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto mb-8">
+                        Challenge yourself with AI-generated exams tailored to your learning materials and track your progress.
+                    </p>
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
+                        <div className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                    <FiClipboard className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-neutral-900 dark:text-white">{exams.length}</div>
+                                    <div className="text-sm text-neutral-600 dark:text-neutral-400">Total Exams</div>
+                                </div>
+                            </div>
                         </div>
-                    </Link>
-                ))}
+
+                        <div className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                                    <FiTrendingUp className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-neutral-900 dark:text-white">
+                                        {documents?.length || 0}
+                                    </div>
+                                    <div className="text-sm text-neutral-600 dark:text-neutral-400">Source Documents</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                                    <FiStar className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-neutral-900 dark:text-white">AI</div>
+                                    <div className="text-sm text-neutral-600 dark:text-neutral-400">Powered Tests</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Button
+                            onClick={() => setIsOpen(true)}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FiPlus className="w-5 h-5" />
+                                Create New Exam
+                            </div>
+                        </Button>
+
+                        <Button asChild variant="outline" className="border-2 border-neutral-300 dark:border-neutral-600 hover:border-purple-500 px-6 py-3 rounded-xl">
+                            <Link href="/uploadingfile" className="flex items-center gap-2">
+                                <FiFileText className="w-5 h-5" />
+                                Upload Documents
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Exams Grid */}
+                {exams.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="w-24 h-24 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <FiTarget className="w-12 h-12 text-neutral-400 dark:text-neutral-500" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">No exams yet</h3>
+                        <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-md mx-auto">
+                            Create your first AI-powered exam from your documents or web content to test your knowledge.
+                        </p>
+                        <Button
+                            onClick={() => setIsOpen(true)}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl"
+                        >
+                            <div className="flex items-center gap-2">
+                                <FiPlus className="w-5 h-5" />
+                                Create Your First Exam
+                            </div>
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {exams.map((exam, index) => (
+                            <div
+                                key={exam.examId}
+                                className="group relative bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-500/30"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
+                                {/* Delete Button */}
+                                <button
+                                    onClick={(e) => { e.preventDefault(); setDeleteExamId(exam.examId); }}
+                                    className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <FiTrash2 className="w-4 h-4 text-red-500" />
+                                </button>
+
+                                {/* Exam Content */}
+                                <Link href={`/exams/${exam.examId}`} className="block">
+                                    <div className="mb-4">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                            <FiTarget className="w-6 h-6 text-white" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                            {exam.emoji} {exam.title}
+                                        </h3>
+                                    </div>
+
+                                    {/* Exam Stats */}
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                                            <FiClock className="w-4 h-4 text-blue-500" />
+                                            <span>Created {new Date(exam.created_at).toLocaleDateString()}</span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                                            <FiZap className="w-4 h-4 text-yellow-500" />
+                                            <span>AI-Generated Questions</span>
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                {/* Action Button */}
+                                <Button asChild className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg">
+                                    <Link href={`/exams/${exam.examId}`} className="flex items-center justify-center gap-2">
+                                        <FiBookOpen className="w-4 h-4" />
+                                        <span>Take Exam</span>
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                                <div className=' h-20'></div>
+
             </div>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent className="max-w-2xl dark:bg-neutral-900 bg-neutral-200 dark:text-neutral-100 text-neutral-900 border border-neutral-700">
+                <DialogContent className="max-w-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border border-neutral-200 dark:border-neutral-700 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-xl">📝 Create Exam</DialogTitle>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                <FiTarget className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-2xl font-bold text-neutral-900 dark:text-white">Create New Exam</DialogTitle>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Generate AI-powered questions from your content</p>
+                            </div>
+                        </div>
                     </DialogHeader>
+
                     {isCreating ? (
-                        <div className="flex flex-col items-center justify-center h-64 text-center">
-                            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                            <p className="text-lg font-medium text-neutral-700 dark:text-neutral-300">{loadingMessage}</p>
+                        <div className="flex flex-col items-center justify-center h-64 text-center py-8">
+                            <div className="relative mb-6">
+                                <div className="w-16 h-16 border-4 border-purple-200 dark:border-purple-800 rounded-full animate-spin"></div>
+                                <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
+                            </div>
+                            <p className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-2">{loadingMessage}</p>
+                            <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 max-w-xs mx-auto">
+                                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full animate-pulse"></div>
+                            </div>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <h2 className="text-sm font-semibold mb-2 flex items-center gap-2"><FiFileText /> From Your Documents</h2>
-                                <div className="rounded border border-neutral-700 p-2 max-h-48 overflow-y-auto dark:bg-neutral-950 bg-neutral-200 space-y-1">
-                                    {documents?.length === 0 && (
-                                        <p className="text-xs dark:text-neutral-400 text-neutral-600">No uploaded documents yet.</p>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <FiFileText className="w-4 h-4 text-blue-500" />
+                                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">From Your Documents</h2>
+                                </div>
+                                <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 max-h-48 overflow-y-auto">
+                                    {documents?.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <FiFileText className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+                                            <p className="text-sm text-neutral-600 dark:text-neutral-400">No documents uploaded yet.</p>
+                                            <Button asChild variant="outline" size="sm" className="mt-3">
+                                                <Link href="/uploadingfile">Upload Documents</Link>
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {documents?.map((doc) => (
+                                                <label
+                                                    key={doc.id}
+                                                    className="flex items-center gap-3 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 p-3 rounded-lg transition-all duration-200"
+                                                >
+                                                    <Checkbox
+                                                        checked={selectedDocs.includes(doc.id)}
+                                                        onCheckedChange={(checked) => handleCheckboxChange(doc.id, Boolean(checked))}
+                                                        className="border-neutral-300 dark:border-neutral-600"
+                                                    />
+                                                    <div className="flex items-center gap-2 flex-1">
+                                                        <FiFileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                                        <span className="font-medium text-neutral-900 dark:text-white text-sm">{doc.originalName}</span>
+                                                    </div>
+                                                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                                        {(doc.size / 1024 / 1024).toFixed(1)}MB
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     )}
-                                    {documents?.map((doc) => (
-                                        <label
-                                            key={doc.id}
-                                            className="flex items-center gap-2 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 p-2 rounded transition"
-                                        >
-                                            <Checkbox
-                                                checked={selectedDocs.includes(doc.id)}
-                                                onCheckedChange={(checked) => handleCheckboxChange(doc.id, Boolean(checked))}
-                                            />
-                                            <span className="font-medium">📄 {doc.originalName}</span>
-                                        </label>
-                                    ))}
                                 </div>
                             </div>
 
-                            <div className="relative flex py-2 items-center">
-                                <div className="flex-grow border-t border-gray-400 dark:border-neutral-700"></div>
-                                <span className="flex-shrink mx-4 text-gray-500 dark:text-neutral-500 text-sm">OR</span>
-                                <div className="flex-grow border-t border-gray-400 dark:border-neutral-700"></div>
+                            <div className="relative flex py-4 items-center">
+                                <div className="flex-grow border-t border-neutral-300 dark:border-neutral-600"></div>
+                                <div className="bg-white dark:bg-neutral-900 px-3">
+                                    <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">OR</span>
+                                </div>
+                                <div className="flex-grow border-t border-neutral-300 dark:border-neutral-600"></div>
                             </div>
 
                             <div>
-                                <h2 className="text-sm font-semibold mb-2 flex items-center gap-2"><FiLink /> From Web URLs</h2>
-                                <div className="space-y-2">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <FiLink className="w-4 h-4 text-green-500" />
+                                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">From Web URLs</h2>
+                                </div>
+                                <div className="space-y-3">
                                     {urls.map((url, index) => (
                                         <div key={index} className="flex items-center gap-2">
                                             <Input
@@ -219,42 +393,98 @@ const ExamsClient = (props: Props) => {
                                                 placeholder="https://example.com/article"
                                                 value={url}
                                                 onChange={(e) => handleUrlChange(index, e.target.value)}
+                                                className="flex-1 border-neutral-300 dark:border-neutral-600 focus:border-purple-500"
                                             />
-                                            <Button variant="ghost" size="icon" onClick={() => removeUrlInput(index)} disabled={urls.length === 1}>
-                                                <FiTrash2 className="text-red-500" />
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => removeUrlInput(index)}
+                                                disabled={urls.length === 1}
+                                                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                                            >
+                                                <FiTrash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
                                     ))}
-                                    <Button onClick={addUrlInput} variant="outline" className="w-full">
-                                        <FiPlus className="mr-2" /> Add Another URL
+                                    <Button
+                                        onClick={addUrlInput}
+                                        variant="outline"
+                                        className="w-full border-dashed border-neutral-300 dark:border-neutral-600 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                    >
+                                        <FiPlus className="mr-2 w-4 h-4" />
+                                        Add Another URL
                                     </Button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <DialogFooter className="justify-end mt-4">
-                        <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={isCreating}>Cancel</Button>
+                    <DialogFooter className="gap-3 pt-6">
                         <Button
-                            className="bg-blue-600 hover:bg-blue-700"
+                            variant="outline"
+                            onClick={() => setIsOpen(false)}
+                            disabled={isCreating}
+                            className="border-neutral-300 dark:border-neutral-600"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6"
                             onClick={handleCreateExam}
                             disabled={isCreating || (selectedDocs.length === 0 && urls.every(u => u.trim() === ''))}
                         >
-                            {isCreating ? 'Creating Exam...' : 'Create Exam 📝'}
+                            {isCreating ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    Creating Exam...
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <FiTarget className="w-4 h-4" />
+                                    Create Exam
+                                </div>
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={!!deleteExamId} onOpenChange={() => setDeleteExamId(null)}>
-                <DialogContent className="max-w-sm dark:bg-neutral-900 bg-neutral-200 dark:text-neutral-100 text-neutral-900 border border-neutral-700">
+                <DialogContent className="max-w-md bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border border-neutral-200 dark:border-neutral-700 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle>⚠️ Confirm Deletion</DialogTitle>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                <FiTrash2 className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">Delete Exam</DialogTitle>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">This action cannot be undone</p>
+                            </div>
+                        </div>
                     </DialogHeader>
-                    <p className="text-sm dark:text-neutral-300 text-neutral-600">Are you sure you want to delete this exam? This cannot be undone.</p>
-                    <DialogFooter className="mt-4 flex gap-2">
-                        <Button className="bg-red-600 hover:bg-red-700" onClick={handleDeleteExam}>Yes, delete</Button>
-                        <Button variant="ghost" onClick={() => setDeleteExamId(null)}>Cancel</Button>
+
+                    <div className="py-4">
+                        <p className="text-neutral-700 dark:text-neutral-300">
+                            Are you sure you want to delete this exam? All associated questions and progress will be permanently removed.
+                        </p>
+                    </div>
+
+                    <DialogFooter className="gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteExamId(null)}
+                            className="border-neutral-300 dark:border-neutral-600"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteExam}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                            <FiTrash2 className="w-4 h-4 mr-2" />
+                            Delete Exam
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

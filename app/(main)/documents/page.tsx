@@ -16,7 +16,9 @@ const DocPage = async (props: Props) => {
         return []
     }
     return (
-        <DocClient initialDocs={data} />
+        <div className="min-h-screen">
+            <DocClient initialDocs={data || []} />
+        </div>
     )
 }
 

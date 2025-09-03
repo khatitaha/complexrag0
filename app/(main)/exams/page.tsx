@@ -22,7 +22,9 @@ const examPage = async (props: Props) => {
         return []
     }
     return (
-        <ExamsClient documents={docs} examss={exams} />
+        <div className="min-h-screen">
+            <ExamsClient documents={docs || []} examss={exams || []} />
+        </div>
     )
 }
 

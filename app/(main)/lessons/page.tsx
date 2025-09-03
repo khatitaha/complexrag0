@@ -19,8 +19,8 @@ const LessonsPage = async (props: Props) => {
     }
 
     return (
-        <div>
-            <LessonClient lessons={data} />
+        <div className="min-h-screen">
+            <LessonClient lessons={data || []} />
         </div>
     )
 }
