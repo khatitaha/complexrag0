@@ -67,6 +67,8 @@ const DocClient: React.FC<props> = (props: props) => {
     const [dragOver, setDragOver] = useState(false);
     const [error, setError] = useState("");
     const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
+    const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
 
     const MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20 MB
 
@@ -172,6 +174,80 @@ const DocClient: React.FC<props> = (props: props) => {
 
         }
     };
+
+    // Multi-selection functions
+    const toggleDocSelection = (docId: string) => {
+        setSelectedDocs(prev =>
+            prev.includes(docId)
+                ? prev.filter(id => id !== docId)
+                : [...prev, docId]
+        );
+    };
+
+    const selectAllDocs = () => {
+        setSelectedDocs(docsWithEmoji.map(doc => doc.id));
+    };
+
+    const clearSelection = () => {
+        setSelectedDocs([]);
+    };
+
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode);
+        if (isSelectionMode) {
+            setSelectedDocs([]);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedDocs.length === 0) return;
+
+        try {
+            // Delete all selected documents
+            for (const docId of selectedDocs) {
+                await deleteFileFromDb(docId);
+            }
+
+            // Remove from UI
+            setDocsWithEmoji((prev) => prev.filter((doc) => !selectedDocs.includes(doc.id)));
+            toast.success(`🗑️ Deleted ${selectedDocs.length} document${selectedDocs.length > 1 ? 's' : ''}!`);
+
+            // Clear selection
+            setSelectedDocs([]);
+            setIsSelectionMode(false);
+
+        } catch (err) {
+            console.error("Bulk delete error:", err);
+            toast.error("❌ Failed to delete some documents");
+        } finally {
+            setDeleteDocId(null); // Close the dialog
+            router.refresh();
+        }
+    };
+
+    // Keyboard shortcuts for selection
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isSelectionMode) return;
+
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'a') {
+                    e.preventDefault();
+                    selectAllDocs();
+                }
+            }
+
+            if (e.key === 'Escape') {
+                clearSelection();
+                setIsSelectionMode(false);
+            }
+        };
+
+        if (isSelectionMode) {
+            document.addEventListener('keydown', handleKeyDown);
+            return () => document.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [isSelectionMode, selectAllDocs, clearSelection]);
 
 
     // Helper function to get file type icon
@@ -370,16 +446,40 @@ const DocClient: React.FC<props> = (props: props) => {
                         {docsWithEmoji.map((doc, index) => (
                             <div
                                 key={doc.id}
-                                className="group relative bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-blue-500/30"
+                                className={`group relative bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 ${
+                                    selectedDocs.includes(doc.id)
+                                        ? 'border-blue-500 shadow-blue-500/20 bg-blue-50/50 dark:bg-blue-900/20'
+                                        : 'border-transparent hover:border-blue-500/30'
+                                }`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
+                                {/* Selection Checkbox */}
+                                {isSelectionMode && (
+                                    <button
+                                        onClick={() => toggleDocSelection(doc.id)}
+                                        className="absolute top-4 right-4 w-8 h-8 rounded-lg border-2 border-neutral-300 dark:border-neutral-600 flex items-center justify-center hover:border-blue-500 transition-colors bg-white/90 dark:bg-neutral-800/90 shadow-sm"
+                                    >
+                                        {selectedDocs.includes(doc.id) ? (
+                                            <div className="w-5 h-5 bg-blue-500 rounded flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 border-2 border-neutral-400 rounded"></div>
+                                        )}
+                                    </button>
+                                )}
+
                                 {/* Delete Button */}
-                                <button
-                                    onClick={() => confirmDeleteDoc(doc.id)}
-                                    className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <FiTrash2 className="w-4 h-4 text-red-500" />
-                                </button>
+                                {!isSelectionMode && (
+                                    <button
+                                        onClick={() => confirmDeleteDoc(doc.id)}
+                                        className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <FiTrash2 className="w-4 h-4 text-red-500" />
+                                    </button>
+                                )}
 
                                 {/* Document Content */}
                                 <Link href={`${doc.publicUrl}`} target="_blank" className="block">
@@ -425,6 +525,102 @@ const DocClient: React.FC<props> = (props: props) => {
                         ))}
                     </div>
                 )}
+
+                {/* Action Buttons - Only show when there are documents */}
+                {docsWithEmoji.length > 0 && (
+                    <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Button asChild className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <label htmlFor="fileInput" className="flex items-center gap-2 cursor-pointer">
+                                <FiPlus className="w-5 h-5" />
+                                Upload More Documents
+                            </label>
+                        </Button>
+
+                        <Button asChild variant="outline" className="border-2 border-neutral-300 dark:border-neutral-600 hover:border-blue-500 px-6 py-3 rounded-xl">
+                            <Link href="/uploadingfile" className="flex items-center gap-2">
+                                <FiFileText className="w-5 h-5" />
+                                Create Content
+                            </Link>
+                        </Button>
+
+                        <Button
+                            onClick={toggleSelectionMode}
+                            variant="outline"
+                            className={`px-6 py-3 rounded-xl border-2 transition-all duration-300 ${
+                                isSelectionMode
+                                    ? 'border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+                                    : 'border-neutral-300 dark:border-neutral-600 hover:border-blue-500'
+                            }`}
+                        >
+                            {isSelectionMode ? 'Exit Selection' : 'Select Multiple'}
+                        </Button>
+                    </div>
+                )}
+
+                {/* Selection Controls */}
+                {isSelectionMode && (
+                    <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg">
+                        <div className="text-center mb-4">
+                            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Selection Mode Active</h3>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">Select documents to perform bulk operations</p>
+                        </div>
+
+                        <div className="flex flex-col lg:flex-row items-center justify-center gap-6">
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <Button
+                                    onClick={selectAllDocs}
+                                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                                    title="Select all documents (Ctrl+A)"
+                                >
+                                    <FiFileText className="w-4 h-4 mr-2" />
+                                    Select All ({docsWithEmoji.length})
+                                </Button>
+                                <Button
+                                    onClick={clearSelection}
+                                    variant="outline"
+                                    className="border-neutral-300 dark:border-neutral-600"
+                                    disabled={selectedDocs.length === 0}
+                                >
+                                    Clear Selection ({selectedDocs.length})
+                                </Button>
+                            </div>
+
+                            {selectedDocs.length > 0 && (
+                                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white/50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <span className="text-white font-bold text-sm">{selectedDocs.length}</span>
+                                        </div>
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                            document{selectedDocs.length > 1 ? 's' : ''} selected
+                                        </span>
+                                    </div>
+                                    <Button
+                                        onClick={() => setDeleteDocId('bulk')} // Trigger bulk delete confirmation
+                                        variant="destructive"
+                                        className="bg-red-500 hover:bg-red-600"
+                                    >
+                                        <FiTrash2 className="w-4 h-4 mr-2" />
+                                        Delete Selected
+                                    </Button>
+                                </div>
+                            )}
+
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center lg:text-left">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span>💡</span>
+                                    <span>Tip: Press <kbd className="px-1 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded text-xs font-mono">Ctrl+A</kbd> to select all</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>⌨️</span>
+                                    <span>Press <kbd className="px-1 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded text-xs font-mono">Esc</kbd> to exit selection mode</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                                <div className=' h-20'></div>
+
             </div>
 
             <Dialog open={!!deleteDocId} onOpenChange={() => setDeleteDocId(null)}>
@@ -462,6 +658,48 @@ const DocClient: React.FC<props> = (props: props) => {
                         >
                             <FiTrash2 className="w-4 h-4 mr-2" />
                             Delete Document
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Delete Confirmation Dialog */}
+            <Dialog open={deleteDocId === 'bulk'} onOpenChange={() => setDeleteDocId(null)}>
+                <DialogContent className="max-w-md bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border border-neutral-200 dark:border-neutral-700 shadow-2xl">
+                    <DialogHeader>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                <FiTrash2 className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">Delete Documents</DialogTitle>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">Delete {selectedDocs.length} document{selectedDocs.length > 1 ? 's' : ''}</p>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="py-4">
+                        <p className="text-neutral-700 dark:text-neutral-300">
+                            Are you sure you want to delete {selectedDocs.length} document{selectedDocs.length > 1 ? 's' : ''}?
+                            All associated lessons and exams will remain intact, but you won't be able to create new content from these files.
+                        </p>
+                    </div>
+
+                    <DialogFooter className="gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteDocId(null)}
+                            className="border-neutral-300 dark:border-neutral-600"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleBulkDelete}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                            <FiTrash2 className="w-4 h-4 mr-2" />
+                            Delete {selectedDocs.length} Document{selectedDocs.length > 1 ? 's' : ''}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

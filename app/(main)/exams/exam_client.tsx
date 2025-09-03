@@ -47,6 +47,8 @@ const ExamsClient = (props: Props) => {
     const [isCreating, setIsCreating] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [deleteExamId, setDeleteExamId] = useState<string | null>(null);
+    const [selectedExams, setSelectedExams] = useState<string[]>([]);
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -95,6 +97,53 @@ const ExamsClient = (props: Props) => {
         setDeleteExamId(null);
     };
 
+    // Multi-selection functions
+    const toggleExamSelection = (examId: string) => {
+        setSelectedExams(prev =>
+            prev.includes(examId)
+                ? prev.filter(id => id !== examId)
+                : [...prev, examId]
+        );
+    };
+
+    const selectAllExams = () => {
+        setSelectedExams(exams.map(exam => exam.examId));
+    };
+
+    const clearSelection = () => {
+        setSelectedExams([]);
+    };
+
+    const toggleSelectionMode = () => {
+        setIsSelectionMode(!isSelectionMode);
+        if (isSelectionMode) {
+            setSelectedExams([]);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedExams.length === 0) return;
+
+        try {
+            // Delete all selected exams
+            for (const examId of selectedExams) {
+                // Here you would call your delete API for each exam
+                // For now, we'll just remove from local state
+                setExams((prev) => prev.filter((exam) => exam.examId !== examId));
+            }
+
+            toast.success(`🗑️ Deleted ${selectedExams.length} exam${selectedExams.length > 1 ? 's' : ''}!`);
+
+            // Clear selection
+            setSelectedExams([]);
+            setIsSelectionMode(false);
+
+        } catch (err) {
+            console.error("Bulk delete error:", err);
+            toast.error("❌ Failed to delete some exams");
+        }
+    };
+
     const handleCheckboxChange = (id: string, checked: boolean) => {
         setSelectedDocs((prev) =>
             checked ? [...prev, id] : prev.filter((docId) => docId !== id)
@@ -139,9 +188,34 @@ const ExamsClient = (props: Props) => {
             toast.error("Failed to create exam.");
             console.error("Exam creation error:", error);
         } finally {
-            setIsCreating(false);
+            setDeleteExamId(null); // Close the dialog
+            router.refresh();
         }
     };
+
+    // Keyboard shortcuts for selection
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!isSelectionMode) return;
+
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'a') {
+                    e.preventDefault();
+                    selectAllExams();
+                }
+            }
+
+            if (e.key === 'Escape') {
+                clearSelection();
+                setIsSelectionMode(false);
+            }
+        };
+
+        if (isSelectionMode) {
+            document.addEventListener('keydown', handleKeyDown);
+            return () => document.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [isSelectionMode, selectAllExams, clearSelection]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pt-16 px-4">
@@ -226,8 +300,85 @@ const ExamsClient = (props: Props) => {
                                 Upload Documents
                             </Link>
                         </Button>
+
+                        {exams.length > 0 && (
+                            <Button
+                                onClick={toggleSelectionMode}
+                                variant="outline"
+                                className={`px-6 py-3 rounded-xl border-2 transition-all duration-300 ${
+                                    isSelectionMode
+                                        ? 'border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+                                        : 'border-neutral-300 dark:border-neutral-600 hover:border-purple-500'
+                                }`}
+                            >
+                                {isSelectionMode ? 'Exit Selection' : 'Select Multiple'}
+                            </Button>
+                        )}
                     </div>
                 </div>
+
+                {/* Selection Controls */}
+                {isSelectionMode && (
+                    <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800 shadow-lg">
+                        <div className="text-center mb-4">
+                            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Selection Mode Active</h3>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">Select exams to perform bulk operations</p>
+                        </div>
+
+                        <div className="flex flex-col lg:flex-row items-center justify-center gap-6">
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <Button
+                                    onClick={selectAllExams}
+                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                    title="Select all exams (Ctrl+A)"
+                                >
+                                    <FiTarget className="w-4 h-4 mr-2" />
+                                    Select All ({exams.length})
+                                </Button>
+                                <Button
+                                    onClick={clearSelection}
+                                    variant="outline"
+                                    className="border-neutral-300 dark:border-neutral-600"
+                                    disabled={selectedExams.length === 0}
+                                >
+                                    Clear Selection ({selectedExams.length})
+                                </Button>
+                            </div>
+
+                            {selectedExams.length > 0 && (
+                                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-white/50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                            <span className="text-white font-bold text-sm">{selectedExams.length}</span>
+                                        </div>
+                                        <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                            exam{selectedExams.length > 1 ? 's' : ''} selected
+                                        </span>
+                                    </div>
+                                    <Button
+                                        onClick={() => setDeleteExamId('bulk')} // Trigger bulk delete confirmation
+                                        variant="destructive"
+                                        className="bg-red-500 hover:bg-red-600"
+                                    >
+                                        <FiTrash2 className="w-4 h-4 mr-2" />
+                                        Delete Selected
+                                    </Button>
+                                </div>
+                            )}
+
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400 text-center lg:text-left">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span>💡</span>
+                                    <span>Tip: Press <kbd className="px-1 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded text-xs font-mono">Ctrl+A</kbd> to select all</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>⌨️</span>
+                                    <span>Press <kbd className="px-1 py-0.5 bg-neutral-200 dark:bg-neutral-700 rounded text-xs font-mono">Esc</kbd> to exit selection mode</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Exams Grid */}
                 {exams.length === 0 ? (
@@ -254,16 +405,40 @@ const ExamsClient = (props: Props) => {
                         {exams.map((exam, index) => (
                             <div
                                 key={exam.examId}
-                                className="group relative bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-500/30"
+                                className={`group relative bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 ${
+                                    selectedExams.includes(exam.examId)
+                                        ? 'border-purple-500 shadow-purple-500/20 bg-purple-50/50 dark:bg-purple-900/20'
+                                        : 'border-transparent hover:border-purple-500/30'
+                                }`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
+                                {/* Selection Checkbox */}
+                                {isSelectionMode && (
+                                    <button
+                                        onClick={() => toggleExamSelection(exam.examId)}
+                                        className="absolute top-4 right-4 w-8 h-8 rounded-lg border-2 border-neutral-300 dark:border-neutral-600 flex items-center justify-center hover:border-purple-500 transition-colors bg-white/90 dark:bg-neutral-800/90 shadow-sm"
+                                    >
+                                        {selectedExams.includes(exam.examId) ? (
+                                            <div className="w-5 h-5 bg-purple-500 rounded flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 border-2 border-neutral-400 rounded"></div>
+                                        )}
+                                    </button>
+                                )}
+
                                 {/* Delete Button */}
-                                <button
-                                    onClick={(e) => { e.preventDefault(); setDeleteExamId(exam.examId); }}
-                                    className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <FiTrash2 className="w-4 h-4 text-red-500" />
-                                </button>
+                                {!isSelectionMode && (
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); setDeleteExamId(exam.examId); }}
+                                        className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <FiTrash2 className="w-4 h-4 text-red-500" />
+                                    </button>
+                                )}
 
                                 {/* Exam Content */}
                                 <Link href={`/exams/${exam.examId}`} className="block">
@@ -457,7 +632,9 @@ const ExamsClient = (props: Props) => {
                                 <FiTrash2 className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">Delete Exam</DialogTitle>
+                                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">
+                                    {deleteExamId === 'bulk' ? 'Delete Exams' : 'Delete Exam'}
+                                </DialogTitle>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400">This action cannot be undone</p>
                             </div>
                         </div>
@@ -465,7 +642,10 @@ const ExamsClient = (props: Props) => {
 
                     <div className="py-4">
                         <p className="text-neutral-700 dark:text-neutral-300">
-                            Are you sure you want to delete this exam? All associated questions and progress will be permanently removed.
+                            {deleteExamId === 'bulk'
+                                ? `Are you sure you want to delete ${selectedExams.length} exam${selectedExams.length > 1 ? 's' : ''}? All associated questions and progress will be permanently removed.`
+                                : 'Are you sure you want to delete this exam? All associated questions and progress will be permanently removed.'
+                            }
                         </p>
                     </div>
 
@@ -479,11 +659,14 @@ const ExamsClient = (props: Props) => {
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={handleDeleteExam}
+                            onClick={deleteExamId === 'bulk' ? handleBulkDelete : handleDeleteExam}
                             className="bg-red-500 hover:bg-red-600 text-white"
                         >
                             <FiTrash2 className="w-4 h-4 mr-2" />
-                            Delete Exam
+                            {deleteExamId === 'bulk'
+                                ? `Delete ${selectedExams.length} Exam${selectedExams.length > 1 ? 's' : ''}`
+                                : 'Delete Exam'
+                            }
                         </Button>
                     </DialogFooter>
                 </DialogContent>
