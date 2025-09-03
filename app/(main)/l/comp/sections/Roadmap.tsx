@@ -54,7 +54,7 @@ const Roadmap = ({ roadmap }: { roadmap: Lesson[] }) => {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 min-h-screen w-full">
-            <h1 className="text-3xl font-bold mb-8">Lesson Roadmap</h1>
+            <h1 className="text-3xl font-bold mb-8">Lesson Roadmap is this one</h1>
             <div className="space-y-4">
                 {roadmap.map((lesson, i) => (
                     <Node

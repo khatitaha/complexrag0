@@ -136,6 +136,27 @@ export default function ImprovedChatUI({ id, initialchat }: { id: string, initia
 
     const [hovered, setHovered] = useState<string | null>(null);
     const [selected, setSelected] = useState<string | null>(null);
+
+    // Function to handle selected text from summary - just put it in input
+    const handleSelectedText = (text: string) => {
+        const message = `Please explain this text: "${text}"`;
+        // Update both the DOM element and the chat state
+        const inputElement = document.querySelector('textarea[placeholder="Type your message here..."]') as HTMLTextAreaElement;
+        if (inputElement) {
+            inputElement.value = message;
+            inputElement.focus();
+            // Update the chat input state
+            chat.handleInputChange({ target: { value: message } } as any);
+        }
+    };
+
+    // Expose the function globally so the summary component can call it
+    useEffect(() => {
+        (window as any).handleSelectedText = handleSelectedText;
+        return () => {
+            delete (window as any).handleSelectedText;
+        };
+    }, []);
     const chatCharacter = useMemo(() => {
         return characters.find((c) => c.id === selected);
     }, [selected]);
