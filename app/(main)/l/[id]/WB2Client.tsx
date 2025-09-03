@@ -8,7 +8,7 @@ import Flashcards from "../comp/sections/Flashcards";
 import Quiz from "../comp/sections/quiz";
 import PdfViewer from "../comp/pdfViwer";
 import MiniNav from "../comp/miniNav";
-import { CircleUserRound, Menu } from "lucide-react";
+import { CircleUserRound, Menu, Eye, EyeOff, MessageSquare, FileText, Maximize2, Minimize2, Monitor, Settings } from "lucide-react";
 import ImprovedChatUI from "../chat/chat_client";
 import { RagMessage } from "../actions";
 import Link from "next/link";
@@ -226,10 +226,13 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
             {!showControlPanel && (
                 <button
                     onClick={() => setShowControlPanel(true)}
-                    className="fixed top-1 right-24 z-50 dark:bg-neutral-800 hover:bg-neutral-400 bg-neutral-300 dark:hover:bg-neutral-700  p-2 rounded-lg shadow-lg transition-colors"
-                    title="Show Control Panel"
+                    className="fixed top-1 right-14 z-50 bg-gradient-to-r from-green-500/80 to-cyan-500/80 hover:from-green-600/90 hover:to-cyan-600/90 text-white p-3 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 border border-green-400/30"
+                    title="Show Screen Controls"
                 >
-                    <Menu />
+                    <div className="flex items-center gap-2">
+                        <Settings className="w-5 h-5" />
+                        <span className="text-sm font-medium hidden sm:inline">Controls</span>
+                    </div>
                 </button>
             )}
 
@@ -254,10 +257,13 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                         onMouseDown={handlePanelMouseDown}
                         className="flex items-center justify-between p-3 dark:bg-neutral-700 bg-neutral-100 rounded-t-lg cursor-move border-b border-neutral-600"
                     >
-                        <div className="dark:text-white text-black text-sm font-semibold">Screen Controls</div>
+                        <div className="flex items-center gap-2 dark:text-white text-black">
+                            <Settings className="w-4 h-4" />
+                            <span className="text-sm font-semibold">Screen Controls</span>
+                        </div>
                         <button
                             onClick={() => setShowControlPanel(false)}
-                            className="dark:text-neutral-400 text-neutral-600 hover:text-white transition-colors ml-2"
+                            className="dark:text-neutral-400 text-neutral-600 hover:text-white transition-colors p-1 rounded hover:bg-neutral-600"
                             title="Hide Control Panel"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,77 +273,142 @@ export default function LessonPage({ result, initialChat }: { result: any, initi
                     </div>
 
                     {/* Panel Content */}
-                    <div className="p-3">
-                        <div className="flex flex-col space-y-2">
+                    <div className="p-3 space-y-4">
+                        {/* Section Visibility Controls */}
+                        <div className="space-y-2">
+                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">
+                                Panel Visibility
+                            </div>
+
+                            {/* Main Content Toggle */}
                             <button
                                 onClick={() => setShowMain(!showMain)}
-                                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${showMain
-                                    ? "bg-red-600 hover:bg-red-700 text-white"
-                                    : "bg-neutral-700 hover:bg-neutral-600 text-gray-300"
-                                    }`}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                    showMain
+                                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                                        : "bg-neutral-700 hover:bg-neutral-600 text-gray-300 hover:text-white"
+                                }`}
+                                title={showMain ? "Hide main content panel" : "Show main content panel"}
                             >
-                                Main {showMain ? "✓" : "✗"}
+                                <div className="flex items-center gap-2">
+                                    <Monitor className="w-4 h-4" />
+                                    <span>Lesson Content</span>
+                                </div>
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                                    showMain ? "bg-blue-500" : "bg-neutral-600"
+                                }`}>
+                                    {showMain ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                </div>
                             </button>
+
+                            {/* Chat Toggle */}
                             <button
                                 onClick={() => setShowChat(!showChat)}
-                                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${showChat
-                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                    : "bg-neutral-700 hover:bg-neutral-600 text-gray-300"
-                                    }`}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                    showChat
+                                        ? "bg-green-600 hover:bg-green-700 text-white shadow-md"
+                                        : "bg-neutral-700 hover:bg-neutral-600 text-gray-300 hover:text-white"
+                                }`}
+                                title={showChat ? "Hide AI chat assistant" : "Show AI chat assistant"}
                             >
-                                Chat {showChat ? "✓" : "✗"}
+                                <div className="flex items-center gap-2">
+                                    <MessageSquare className="w-4 h-4" />
+                                    <span>AI Assistant</span>
+                                </div>
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                                    showChat ? "bg-green-500" : "bg-neutral-600"
+                                }`}>
+                                    {showChat ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                </div>
                             </button>
                         </div>
 
                         {/* Document Controls */}
                         {file_id && showMain && (
-                            <div className="mt-3 pt-3 border-t border-neutral-600">
-                                <div className="dark:text-white text-sm font-semibold mb-2 text-center text-black">Document</div>
-                                <div className="flex flex-col space-y-2">
-                                    <button
-                                        onClick={() => setShowDocument(!showDocument)}
-                                        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${showDocument
-                                            ? "bg-green-600 hover:bg-green-700 text-white"
-                                            : "bg-neutral-700 hover:bg-neutral-600 text-gray-300"
-                                            }`}
-                                    >
-                                        {showDocument ? "Hide Doc" : "Show Doc"}
-                                    </button>
+                            <div className="pt-3 border-t border-neutral-600 space-y-3">
+                                <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+                                    Document Viewer
+                                </div>
 
-                                    {showDocument && (
-                                        <div className="flex flex-col space-y-1">
+                                {/* Document Toggle */}
+                                <button
+                                    onClick={() => setShowDocument(!showDocument)}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        showDocument
+                                            ? "bg-purple-600 hover:bg-purple-700 text-white shadow-md"
+                                            : "bg-neutral-700 hover:bg-neutral-600 text-gray-300 hover:text-white"
+                                    }`}
+                                    title={showDocument ? "Hide document viewer" : "Show document viewer"}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-4 h-4" />
+                                        <span>Original Document</span>
+                                    </div>
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                                        showDocument ? "bg-purple-500" : "bg-neutral-600"
+                                    }`}>
+                                        {showDocument ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                    </div>
+                                </button>
+
+                                {/* Document Size Controls */}
+                                {showDocument && (
+                                    <div className="space-y-2 pl-2">
+                                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">Viewer Size:</div>
+                                        <div className="grid grid-cols-1 gap-1">
                                             <button
                                                 onClick={() => setDocumentSize("half")}
-                                                className={`px-2 py-1 rounded text-xs transition-colors ${documentSize === "half"
-                                                    ? "bg-yellow-600 text-white"
-                                                    : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500"
-                                                    }`}
+                                                className={`flex items-center justify-between px-2 py-1.5 rounded text-xs transition-all duration-200 ${
+                                                    documentSize === "half"
+                                                        ? "bg-yellow-600 text-white shadow-sm"
+                                                        : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500 hover:text-white"
+                                                }`}
+                                                title="Show document at 50% width"
                                             >
-                                                Half (50%)
+                                                <span>Compact View</span>
+                                                <span className="text-xs opacity-75">50%</span>
                                             </button>
                                             <button
                                                 onClick={() => setDocumentSize("large")}
-                                                className={`px-2 py-1 rounded text-xs transition-colors ${documentSize === "large"
-                                                    ? "bg-yellow-600 text-white"
-                                                    : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500"
-                                                    }`}
+                                                className={`flex items-center justify-between px-2 py-1.5 rounded text-xs transition-all duration-200 ${
+                                                    documentSize === "large"
+                                                        ? "bg-yellow-600 text-white shadow-sm"
+                                                        : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500 hover:text-white"
+                                                }`}
+                                                title="Show document at 75% width"
                                             >
-                                                Large (75%)
+                                                <span>Wide View</span>
+                                                <span className="text-xs opacity-75">75%</span>
                                             </button>
                                             <button
                                                 onClick={() => setDocumentSize("full")}
-                                                className={`px-2 py-1 rounded text-xs transition-colors ${documentSize === "full"
-                                                    ? "bg-yellow-600 text-white"
-                                                    : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500"
-                                                    }`}
+                                                className={`flex items-center justify-between px-2 py-1.5 rounded text-xs transition-all duration-200 ${
+                                                    documentSize === "full"
+                                                        ? "bg-yellow-600 text-white shadow-sm"
+                                                        : "bg-neutral-600 text-neutral-300 hover:bg-neutral-500 hover:text-white"
+                                                }`}
+                                                title="Show document at full width"
                                             >
-                                                Full (100%)
+                                                <span>Full Screen</span>
+                                                <span className="text-xs opacity-75">100%</span>
                                             </button>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         )}
+
+                        {/* Quick Tips */}
+                        <div className="pt-3 border-t border-neutral-600">
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 uppercase tracking-wide">
+                                Pro Tips
+                            </div>
+                            <div className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1">
+                                <div>• Drag panel to reposition</div>
+                                <div>• Use resizer to adjust widths</div>
+                                <div>• Toggle panels for focus mode</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

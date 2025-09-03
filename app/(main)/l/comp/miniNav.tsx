@@ -45,12 +45,22 @@ export default function MiniNav({
         checkSidebar();
 
         window.addEventListener('resize', checkScreenSize);
+
+        // More frequent sidebar checking for better responsiveness
+        const intervalId = setInterval(checkSidebar, 100); // Check every 100ms
+
         // Watch for sidebar changes
         const observer = new MutationObserver(checkSidebar);
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'style']
+        });
 
         return () => {
             window.removeEventListener('resize', checkScreenSize);
+            clearInterval(intervalId);
             observer.disconnect();
         };
     }, []);
@@ -59,7 +69,7 @@ export default function MiniNav({
 
     if (isMobile) {
         return (
-            <nav className="fixed top-0 left-12  z-30 ">
+            <nav className="fixed top-0 left-10 z-30  ">
                 <div className="px-4 py-2">
                     {/* Mobile: Horizontal scrollable nav */}
                     <div className="flex gap-1 overflow-x-auto scrollbar-hide">
@@ -93,7 +103,7 @@ export default function MiniNav({
     if (isTablet) {
         return (
             <nav
-                className="fixed top-0 z-30  "
+                className="fixed top-0 z-30  transition-all duration-100 ease-in-out"
                 style={{ left: `${leftOffset}px`, right: '140px' }} // Leave more space for control panel
             >
                 <div className="px-3 py-2">
@@ -128,7 +138,7 @@ export default function MiniNav({
     // Desktop: Original horizontal layout but responsive
     return (
         <nav
-            className="fixed top-0  z-30 "
+            className="fixed top-0 z-30  transition-all duration-100 ease-in-out"
             style={{ left: `${leftOffset}px`, right: '140px' }} // Leave space for control panel
         >
             <div className="px-4 py-2">

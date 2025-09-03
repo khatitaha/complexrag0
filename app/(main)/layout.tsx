@@ -71,7 +71,6 @@ export default function NavbarLayout({ children }: { children: React.ReactNode }
                     <div className="flex items-center gap-2 print:hiddenn">
                         <ThemeSwitcher />
 
-                        <Link href={'/profile'}><CircleUserRound className='print:hidden' /></Link>
                     </div>
                 </div>
 
