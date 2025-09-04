@@ -181,15 +181,24 @@ const ExamsClient = (props: Props) => {
         setIsCreating(true);
         try {
             const createdExam = await examCreationLogic(selectedFilesPaths, validUrls);
-            toast.success("📝 Exam created!");
+
+            // Validate that exam was created successfully
+            if (!createdExam || !createdExam.examId) {
+                throw new Error("Exam creation failed - no exam ID returned");
+            }
+
+            toast.success("📝 Exam created successfully!");
             setIsOpen(false);
-            router.push(`/exams/${createdExam?.examId}`);
+
+            // Only navigate if we have a valid exam ID
+            router.push(`/exams/${createdExam.examId}`);
+
         } catch (error) {
-            toast.error("Failed to create exam.");
             console.error("Exam creation error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to create exam. Please try again.");
+            setIsOpen(false); // Close dialog on error
         } finally {
-            setDeleteExamId(null); // Close the dialog
-            router.refresh();
+            setIsCreating(false); // Always reset loading state
         }
     };
 
@@ -455,7 +464,11 @@ const ExamsClient = (props: Props) => {
                                     <div className="space-y-3 mb-6">
                                         <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
                                             <FiClock className="w-4 h-4 text-blue-500" />
-                                            <span>Created {new Date(exam.created_at).toLocaleDateString()}</span>
+                                            <span>Created {new Date(exam.created_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}</span>
                                         </div>
 
                                         <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
