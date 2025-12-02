@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 
 import SectionSeparator from "@/components/SectionSeparator";
+import Link from "next/link";
 
 const gradientText = "bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-green-400";
 const neonBorder = "border border-cyan-500/30 shadow-lg shadow-cyan-500/10";
@@ -82,19 +83,22 @@ export default function LandingPage() {
       >
         <div className="flex items-center gap-8">
           <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-green-400">
-            StudyHub AI
+            AzamStudying
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm">
             <a href="#features" className="hover:text-cyan-400 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-cyan-400 transition-colors">How it Works</a>
             <a href="#pricing" className="hover:text-cyan-400 transition-colors">Pricing</a>
           </div>
+          <Link href={"/home"}>
           <Button 
             size="sm"
             className="bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-400 hover:to-green-400 text-white border-0"
           >
             Get Started
           </Button>
+          </Link>
+          
         </div>
       </motion.nav>
 
@@ -152,10 +156,13 @@ export default function LandingPage() {
               size="lg"
               className="bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-400 hover:to-green-400 text-white font-bold px-8 py-4 text-lg rounded-xl shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 group"
             >
+              <Link href={"/home"}>
               <span className="flex items-center gap-2">
                 Start Learning Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
+              </Link>
+              
             </Button>
             
             <Button
@@ -179,7 +186,7 @@ export default function LandingPage() {
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-cyan-400" />
-              <span>10K+ Active Learners</span>
+              <span>1+ Active Learners</span>
             </div>
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-green-400" />
@@ -436,7 +443,7 @@ export default function LandingPage() {
               Choose Your Learning Journey
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Flexible plans designed to fit your needs, from casual learners to serious students and professionals.
+             " pricing does not work yet so dont worry about it just use the free plan "
             </p>
           </motion.div>
 
@@ -538,6 +545,7 @@ export default function LandingPage() {
                           </li>
                         ))}
                       </ul>
+                      <Link href={"/home"}>
                       <Button
                         className={`w-full font-bold py-3 rounded-xl text-lg transition-all duration-300 ${
                           plan.popular
@@ -547,6 +555,8 @@ export default function LandingPage() {
                       >
                         {plan.cta}
                       </Button>
+                      </Link>
+                      
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -581,12 +591,16 @@ export default function LandingPage() {
             Join thousands of learners who have already revolutionized their study habits with AI-powered tools.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            
+            <Link href={"/home"}>
             <Button
               size="lg"
               className="bg-gradient-to-r from-cyan-500 to-green-500 hover:from-cyan-400 hover:to-green-400 text-white font-bold px-12 py-4 text-xl rounded-xl shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300"
             >
               Start Learning Today
             </Button>
+            </Link>
+            
             <p className="text-sm text-gray-400">No credit card required • 14-day free trial</p>
           </div>
         </motion.div>
@@ -597,7 +611,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div className="space-y-4">
-              <h3 className={`text-2xl font-bold ${gradientText}`}>StudyHub AI</h3>
+              <h3 className={`text-2xl font-bold ${gradientText}`}>AzamStudying</h3>
               <p className="text-gray-400 leading-relaxed">
                 Revolutionizing education with AI-powered learning tools that adapt to every student's unique needs.
               </p>
@@ -646,7 +660,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} StudyHub AI. All rights reserved. Made with ❤️ for learners worldwide.</p>
+            <p>&copy; {new Date().getFullYear()} by the way its called azam as in like "as im" studying, get it ? </p>
           </div>
         </div>
       </footer>

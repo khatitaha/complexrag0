@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { GoogleGenAI } from '@google/genai';                                                                                                                           
+import { GoogleGenAI } from '@google/genai';
+import { rateLimit } from '@/lib/utils/rateLimit';
+
+const limiter = rateLimit({
+    interval: 60 * 1000, // 1 minute
+});
 
 // Initialize Google Generative AI client
 // Make sure to set the GEMINI_API_KEY environment variable
@@ -45,6 +50,7 @@ function createWavBuffer(pcmData: Buffer, sampleRate: number = 24000): Buffer {
 
 export async function POST(req: NextRequest) {
   try {
+    await limiter.check(req, 10); // 10 requests per minute
     const supabase = await createClient();
     const {
       data: { user },
@@ -58,6 +64,10 @@ export async function POST(req: NextRequest) {
 
     if (!slides || !lessonId) {
       return NextResponse.json({ error: 'Missing slides or lessonId' }, { status: 400 });
+    }
+
+    if (!Array.isArray(slides) || slides.some(slide => typeof slide.mainText !== 'string')) {
+        return NextResponse.json({ error: 'Invalid slides format' }, { status: 400 });
     }
 
     // Verify that the user owns the lesson
@@ -110,7 +120,6 @@ export async function POST(req: NextRequest) {
           });
 
         if (uploadError) {
-          console.error('Upload Error:', uploadError);
           throw new Error(`Failed to upload audio for slide ${index}`);
         }
 
@@ -133,14 +142,15 @@ export async function POST(req: NextRequest) {
       .eq('id', lessonId);
 
     if (dbError) {
-      console.error('DB Error:', dbError);
       throw new Error('Failed to update lesson with new slides');
     }
 
     return NextResponse.json(newSlides, { status: 200 });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Rate limit exceeded') {
+        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
     console.error('TTS Generation Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

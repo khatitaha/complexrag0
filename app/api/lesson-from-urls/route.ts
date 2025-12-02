@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { rateLimit } from '@/lib/utils/rateLimit';
+
+const limiter = rateLimit({
+    interval: 60 * 1000, // 1 minute
+});
 
 export async function POST(req: NextRequest) {
   try {
+    await limiter.check(req, 10); // 10 requests per minute
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -21,6 +27,9 @@ export async function POST(req: NextRequest) {
     if (!urlRegex.test(url)) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
+
+    // TODO: Add further validation to prevent SSRF attacks.
+    // This should include checks to ensure the URL does not resolve to an internal or private IP address.
 
     // Create a pending lesson record in the database
     const { data: newLesson, error } = await supabase
@@ -41,14 +50,15 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error creating pending lesson:", error);
       return NextResponse.json({ error: 'Failed to create pending lesson' }, { status: 500 });
     }
 
     return NextResponse.json({ lessonId: newLesson.id }, { status: 200 });
 
   } catch (error) {
-    console.error('Lesson from URL error:', error);
+    if (error instanceof Error && error.message === 'Rate limit exceeded') {
+        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

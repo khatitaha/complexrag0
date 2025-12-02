@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/utils/rateLimit'
 
-
-
-
-
+const limiter = rateLimit({
+    interval: 60 * 1000, // 1 minute
+})
 
 export async function POST(request: NextRequest) {
-    console.log("we are uploading the file")
     try {
+        await limiter.check(request, 10) // 10 requests per minute
         const supabase = await createClient()
 
         const formData = await request.formData()
         const files = formData.getAll('files')
-        console.log("we are uploading the file", files)
-
 
         if (!files || files.length === 0) {
             return NextResponse.json({ error: 'No files provided' }, { status: 400 })
@@ -82,7 +78,6 @@ export async function POST(request: NextRequest) {
                 .from('docs')
                 .getPublicUrl(`uploads/${newFileName}`)
 
-            console.log("the public url is :::::::::::::::::::", publicUrlData);
             const { error: dbError } = await supabase.from("documents").insert([
                 {
                     user_id: user.id,
@@ -108,16 +103,15 @@ export async function POST(request: NextRequest) {
             })
         }
 
-
-
-        console.log('Files uploaded to Supabase successfully:', uploadedFiles)
-
         return NextResponse.json({
             message: 'Files uploaded to Supabase successfully',
             files: uploadedFiles,
             fileRoute: uploadedFiles[0]?.path || null
         })
     } catch (error) {
+        if (error instanceof Error && error.message === 'Rate limit exceeded') {
+            return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+        }
         console.error('Unexpected error uploading files:', error)
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
     }

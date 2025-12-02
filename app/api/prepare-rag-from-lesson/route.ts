@@ -5,6 +5,12 @@ import { Pinecone as PineconeClient } from "@pinecone-database/pinecone";
 import { LocalEmbeddings } from "@/lib/utils/localEmbeddings";
 import { createClient } from "@/lib/supabase/server";
 import { getLessonFromDb } from "@/app/(main)/l/actions";
+import { rateLimit } from "@/lib/utils/rateLimit";
+import { NextRequest } from "next/server";
+
+const limiter = rateLimit({
+    interval: 60 * 1000, // 1 minute
+});
 
 interface CleanDoc {
     id: string;
@@ -48,26 +54,27 @@ async function storeSplitsToPineConeIndex(allSplits: CleanDoc[], userId: string)
     await vectorStore.addDocuments(allSplits);
 }
 
-export async function POST(req: Request) {
-    let lessonId: string | undefined;
+export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        lessonId = body.lessonId;
-    } catch {
-        return new Response('Invalid JSON body', { status: 400 });
-    }
-    if (!lessonId) {
-        return new Response('Missing lessonId', { status: 400 });
-    }
+        await limiter.check(req, 5); // 5 requests per minute
+        let lessonId: string | undefined;
+        try {
+            const body = await req.json();
+            lessonId = body.lessonId;
+        } catch {
+            return new Response('Invalid JSON body', { status: 400 });
+        }
+        if (!lessonId) {
+            return new Response('Missing lessonId', { status: 400 });
+        }
 
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-    const userId = user.id;
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return new Response('Unauthorized', { status: 401 });
+        }
+        const userId = user.id;
 
-    try {
         const lesson = await getLessonFromDb(lessonId);
         if (!lesson) {
             return new Response('Lesson not found', { status: 404 });
@@ -97,7 +104,9 @@ export async function POST(req: Request) {
         });
 
     } catch (err) {
-        console.error(err);
+        if (err instanceof Error && err.message === 'Rate limit exceeded') {
+            return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+        }
         return new Response('Error processing lesson', { status: 500 });
     }
 }

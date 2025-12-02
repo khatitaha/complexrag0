@@ -1,21 +1,35 @@
-import { Redis } from "@upstash/redis";
-import { Ratelimit } from "@upstash/ratelimit";
+import { LRUCache } from 'lru-cache'
+import { NextRequest, NextResponse } from 'next/server'
 
-// Create a new Upstash Redis instance
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+type RateLimitOptions = {
+    uniqueTokenPerInterval?: number
+    interval?: number
+}
 
-// Create a new Ratelimit instance
-// See https://upstash.com/docs/redis/sdks/ts/ratelimit/overview for more information
-export const ratelimit = new Ratelimit({
-  redis: redis,
-  limiter: Ratelimit.slidingWindow(10, "10 s"), // 10 requests per 10 seconds
-  analytics: true,
-  /**
-   * Optional: A key prefix for the ratelimit keys in Redis.
-   * Can be used to organize your keys on Redis.
-   */
-  prefix: "@upstash/ratelimit",
-});
+export function rateLimit(options?: RateLimitOptions) {
+    const tokenCache = new LRUCache({
+        max: options?.uniqueTokenPerInterval || 500, // Max 500 unique tokens per interval
+        ttl: options?.interval || 60000, // 1 minute
+    })
+
+    return {
+        check: (req: NextRequest, limit: number, token = req.ip ?? '127.0.0.1') => {
+            const tokenCount = (tokenCache.get(token) as number[]) || [0]
+            if (tokenCount[0] === 0) {
+                tokenCache.set(token, tokenCount)
+            }
+            tokenCount[0] += 1
+
+            const currentUsage = tokenCount[0]
+            const isRateLimited = currentUsage >= limit
+            
+            return new Promise<void>((resolve, reject) => {
+                if (isRateLimited) {
+                    reject()
+                } else {
+                    resolve()
+                }
+            })
+        },
+    }
+}
