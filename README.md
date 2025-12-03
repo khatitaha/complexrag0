@@ -26,6 +26,20 @@ This project is a web application that transforms your documents into a personal
 *   **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
 *   **Language Models:** [LangChain](https://www.langchain.com/), [Groq](https://groq.com/)
 *   **Vector Store:** [Pinecone](https://www.pinecone.io/)
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 17 48" src="https://github.com/user-attachments/assets/f27cd711-fc16-4435-90b4-2c052e532943" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 17 40" src="https://github.com/user-attachments/assets/6e962734-10e0-4bef-8dac-09b40c3feecd" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 17 25" src="https://github.com/user-attachments/assets/53897e5d-de32-467f-b3d1-b08c331e3a7e" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 17 18" src="https://github.com/user-attachments/assets/ba2aa9f2-b69d-4696-b393-4c986e1198f1" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 55" src="https://github.com/user-attachments/assets/73f075f0-8d4b-4077-b9b1-1192bbe0de18" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 48" src="https://github.com/user-attachments/assets/48db65f9-482c-4a3c-9eca-9480e70baedf" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 38" src="https://github.com/user-attachments/assets/9d8e1b2b-d053-453f-afa2-c61db4298a70" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 32" src="https://github.com/user-attachments/assets/943b8d68-efc3-4af6-bf2b-02e3cebdec9b" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 19" src="https://github.com/user-attachments/assets/6c159b84-416c-4f95-a8fb-44ab8c8c2500" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 16 14" src="https://github.com/user-attachments/assets/29f1dbb3-c27d-43ad-817b-4a6f81bff2e5" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 15 49" src="https://github.com/user-attachments/assets/d775f7bc-c58c-4a59-8815-c8c7a8f92d1a" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 15 38" src="https://github.com/user-attachments/assets/81398da0-5cc6-43cc-8dd8-6aeaf30ad2f4" />
+<img width="1832" height="914" alt="Screenshot 2025-12-03 at 20 15 32" src="https://github.com/user-attachments/assets/7220d0e6-5f14-4d69-a020-5649c1b4b99a" />
+<img width="1830" height="914" alt="Screenshot 2025-12-03 at 20 15 03" src="https://github.com/user-attachments/assets/10f363b0-f425-43a0-b9bd-3336d20762b1" />
 
 ## Getting Started
 
