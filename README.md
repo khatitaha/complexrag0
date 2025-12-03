@@ -1,105 +1,69 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Your Personal AI Tutor
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+This project is a web application that transforms your documents into a personalized learning experience. Upload your study materials, and the application will generate interactive lessons, quizzes, and flashcards to help you master the content. You can even chat with an AI tutor to get answers to your questions and deepen your understanding.
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+*   **Upload and Manage Your Documents:** Easily upload your PDFs, Word documents, and other files to the platform. All your materials are stored securely and are accessible whenever you need them.
+*   **Generate Interactive Lessons:** Transform any document into a comprehensive lesson. The application automatically generates a summary, key takeaways, and a structured outline of the content.
+*   **Create Custom Quizzes:** Test your knowledge with automatically generated quizzes. The quizzes are based on the content of your documents, so you can be sure you're focusing on the most important information.
+*   **Learn with Flashcards:** Reinforce your learning with flashcards. The application creates flashcards with key terms and concepts from your documents.
+*   **Chat with an AI Tutor:** Get personalized help from an AI tutor. The tutor can answer your questions, provide explanations, and help you understand complex topics. The chat is powered by a Retrieval-Augmented Generation (RAG) model, which means it can access and reason about the content of your documents.
+*   **Interactive Document Viewer:** View your original documents alongside the generated lessons and chat. The interactive viewer allows you to highlight text, take notes, and easily reference the source material.
 
-## Demo
+## How It Works
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+1.  **Upload:** Start by uploading your documents to the platform.
+2.  **Generate:** Choose a document and generate a lesson. The application will create a summary, quizzes, and flashcards based on the content.
+3.  **Learn:** Study the generated lesson, take the quizzes, and use the flashcards to reinforce your knowledge.
+4.  **Interact:** Chat with the AI tutor to get answers to your questions and deepen your understanding of the material.
 
-## Deploy to Vercel
+## Tech Stack
 
-Vercel deployment will guide you through creating a Supabase account and project.
+*   **Framework:** [Next.js](https://nextjs.org/)
+*   **Backend:** [Supabase](https://supabase.io/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
+*   **Language Models:** [LangChain](https://www.langchain.com/), [Groq](https://groq.com/)
+*   **Vector Store:** [Pinecone](https://www.pinecone.io/)
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Getting Started
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+To get a local copy up and running, follow these simple steps.
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### Prerequisites
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+*   Node.js and npm installed. You can download them from [here](https://nodejs.org/en/download/).
+*   A Supabase account. You can create one for free at [supabase.com](https://supabase.com/).
 
-## Clone and run locally
+### Installation
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+1.  Clone the repo
+    ```sh
+    git clone https://github.com/your_username/your_project_name.git
+    ```
+2.  Install NPM packages
+    ```sh
+    npm install
+    ```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+### Environment Variables
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+Create a `.env.local` file in the root of the project and add the following environment variables:
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+```
+NEXT_PUBLIC_SUPABASE_URL=<YOUR_SUPABASE_PROJECT_URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_SUPABASE_PROJECT_ANON_KEY>
+```
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+You will also need to configure environment variables for other services used in the application, such as Pinecone, Groq, and any other services you wish to use.
 
-3. Use `cd` to change into the app's directory
+### Running the Application
 
-   ```bash
-   cd with-supabase-app
-   ```
+To run the application in a development environment, use the following command:
 
-4. Rename `.env.example` to `.env.local` and update the following:
+```bash
+npm run dev
+```
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
-
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+The application will be available at `http://localhost:3000`.
