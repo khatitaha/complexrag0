@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getLessonFromDb } from "@/app/(main)/l/actions";
 import { rateLimit } from "@/lib/utils/rateLimit";
 import { NextRequest } from "next/server";
+import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
+
+
 
 const limiter = rateLimit({
     interval: 60 * 1000, // 1 minute
@@ -38,7 +41,11 @@ function convertDocumentsToCleanDocs(docs: Document<Record<string, any>>[], user
 }
 
 async function getVectorStore(userId: string) {
-    const embeddings = new LocalEmbeddings();
+    // const embeddings = new LocalEmbeddings();
+const embeddings = new HuggingFaceInferenceEmbeddings({
+  apiKey: process.env.HF_API_KEY, 
+  model: 'intfloat/e5-large-v2',
+});
     const pinecone = new PineconeClient({ apiKey: process.env.PINECONE_API_KEY || "" });
     const pineconeIndex = pinecone.Index("complexrag");
     const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {

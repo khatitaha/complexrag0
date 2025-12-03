@@ -3,11 +3,12 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Document } from "langchain/document";
 import { PineconeStore } from "@langchain/pinecone";
 import { Pinecone as PineconeClient } from "@pinecone-database/pinecone";
-import { LocalEmbeddings } from "@/lib/utils/localEmbeddings";
+// import { LocalEmbeddings } from "@/lib/utils/localEmbeddings";
 import { loadAndSplitDocument } from "@/lib/utils/langchain";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/utils/rateLimit";
 import { NextRequest } from "next/server";
+import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
 
 const limiter = rateLimit({
     interval: 60 * 1000, // 1 minute
@@ -132,7 +133,11 @@ export async function loadAndSplitPdfFile(filePath: string | Blob, userId: strin
 }
 
 export async function getVectorStore(userId: string) {
-    const embeddings = new LocalEmbeddings();
+    // const embeddings = new LocalEmbeddings();
+    const embeddings = new HuggingFaceInferenceEmbeddings({
+      apiKey: process.env.HF_API_KEY, 
+      model: 'intfloat/e5-large-v2',
+    });
     const pinecone = new PineconeClient(
         {
             apiKey: process.env.PINECONE_API_KEY || "",
