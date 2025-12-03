@@ -1,13 +1,22 @@
-# Educational Content Platform
+# Your Personal AI Tutor
 
-This is a Next.js and Supabase starter kit that has been extended into a platform for managing educational content. The application allows users to upload documents, create exams, and manage lessons. It uses Tailwind CSS for styling and shadcn/ui for UI components. The backend is powered by Supabase, which provides a database and authentication services.
+This project is a web application that transforms your documents into a personalized learning experience. Upload your study materials, and the application will generate interactive lessons, quizzes, and flashcards to help you master the content. You can even chat with an AI tutor to get answers to your questions and deepen your understanding.
 
-## Core Features
+## Features
 
-*   **Document Management:** Allows users to upload, view, and delete their documents.
-*   **Exam Management:** Enables users to create exams from their uploaded documents.
-*   **Lesson Management:** Allows users to create and view interactive lessons from their documents.
-*   **Interactive Learning:** Provides a chat interface for interactive learning, powered by a Retrieval-Augmented Generation (RAG) pipeline.
+*   **Upload and Manage Your Documents:** Easily upload your PDFs, Word documents, and other files to the platform. All your materials are stored securely and are accessible whenever you need them.
+*   **Generate Interactive Lessons:** Transform any document into a comprehensive lesson. The application automatically generates a summary, key takeaways, and a structured outline of the content.
+*   **Create Custom Quizzes:** Test your knowledge with automatically generated quizzes. The quizzes are based on the content of your documents, so you can be sure you're focusing on the most important information.
+*   **Learn with Flashcards:** Reinforce your learning with flashcards. The application creates flashcards with key terms and concepts from your documents.
+*   **Chat with an AI Tutor:** Get personalized help from an AI tutor. The tutor can answer your questions, provide explanations, and help you understand complex topics. The chat is powered by a Retrieval-Augmented Generation (RAG) model, which means it can access and reason about the content of your documents.
+*   **Interactive Document Viewer:** View your original documents alongside the generated lessons and chat. The interactive viewer allows you to highlight text, take notes, and easily reference the source material.
+
+## How It Works
+
+1.  **Upload:** Start by uploading your documents to the platform.
+2.  **Generate:** Choose a document and generate a lesson. The application will create a summary, quizzes, and flashcards based on the content.
+3.  **Learn:** Study the generated lesson, take the quizzes, and use the flashcards to reinforce your knowledge.
+4.  **Interact:** Chat with the AI tutor to get answers to your questions and deepen your understanding of the material.
 
 ## Tech Stack
 
@@ -58,18 +67,3 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:3000`.
-
-## Available Scripts
-
-In the project directory, you can run:
-
-*   `npm run dev`: Runs the app in the development mode.
-*   `npm run build`: Builds the app for production to the `.next` folder.
-*   `npm start`: Starts the production server.
-*   `npm run lint`: Lints the project files.
-
-## Deployment
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
